@@ -76,6 +76,17 @@ public class TestingServiceManagerTest {
     assertThat(testingService.beforeTestWithParameterCount).is(0);
   }
 
+  @Test
+  public void methodsFoundThroughSubclass() {
+    MyTestingService testingService = new MyTestingService() { };
+
+    new TestingServiceManager(testingService).beforeTest();
+
+    assertThat(testingService.beforeSuiteCount).is(0);
+    assertThat(testingService.beforeTestCount).is(1);
+    assertThat(testingService.afterTestCount).is(0);
+  }
+
   private static class MyTestingService implements TestingService {
     int beforeSuiteCount = 0;
     int beforeTestCount = 0;
