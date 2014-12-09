@@ -10,6 +10,7 @@ Acai makes it simple to:
  - Start any services needed by your tests
  - Run between-test cleanup of these services
  - Start up multiple services for testing in the right order
+ - Create test scoped bindings
 
 Acai is designed for large functional tests of your application. For
 example it can help with writing tests which start your backend and frontend
@@ -168,8 +169,61 @@ In the above example `MyFrontendRunner` is annotated
 `@DependsOn(MyBackendRunner.class)` which will cause Acai to start the
 backend server before starting the frontend.
 
+## Test scoped bindings
+Occasionally you may wish to have one instance of a class per test and inject
+this instance in multiple places in the object graph. In this case Guice's
+default instance scope will not do. Fortunately Acai provides a `@TestScoped`
+annotation which can be used to achieve exactly this.
+
+For example we may define a module for using Webdriver (a popular browser
+automation tool) in our tests like so:
+
+```java
+class WebdriverModule extends AbstractModule {
+  private static final Duration MAX_WAIT = Duration.standardSeconds(5);
+
+  @Override
+  protected void configure() {
+    install(new TestingServiceModule() {
+      @Override protected void configureTestingServices() {
+        bindTestingService(WebDriverQuitter.class);
+      }
+    });
+  }
+
+  @Provides
+  @TestScoped
+  private WebDriver provideWebDriver() {
+    // Provide the driver here; precisely one instance will be
+    // created per test case.
+  }
+
+  @Provides
+  WebDriverWait provideWait(WebDriver webDriver) {
+    return new WebDriverWait(webDriver, MAX_WAIT.getStandardSeconds());
+  }
+
+  static class WebDriverQuitter implements TestingService {
+    @Inject Provider<WebDriver> webDriver;
+
+    @AfterTest void quitWebDriver() throws Exception {
+      // Calling get on the Provider here returns the instance
+      // for the test case which we are currently tearing down.
+      webDriver.get().quit();
+    }
+  }
+}
+
+```
+
+One important point to note when using `@TestScoped` bindings is that
+`TestingService` instances are instantiated once for all tests outside of test
+scope. Therefore if you wish to access `@TestScoped` bindings in a
+`@BeforeTest` or `@AfterTest` method you should inject a `Provider` and call
+`get` on it within those methods as shown in the above example.
+
 ## API
-As shown in the above examples Acai has a very small API surface.
+As shown in the above examples Acai has a relatively small API surface.
 Firstly, and most importantly, there is the `Acai` rule class itself
 which is used as a JUnit4 `@Rule` and is passed a module class to be used to
 configure the test.
@@ -184,6 +238,10 @@ of this interface should add zero argument methods annotated with one of
 the suite, before each test or after each test respectively. You may add as
 many methods annotated with these annotations as you wish to a
 `TestingService`; Acai will find and run them all when appropriate.
+
+For more advanced use-cases where instance scope is not sufficient the
+`@TestScoped` annotation can be used to create one instance of a class per test
+case.
 
 Finally a `TestingService` implementation can be annotated `@DependsOn` to
 signal its `@BeforeSuite` and `@BeforeTest` methods need to be run after
