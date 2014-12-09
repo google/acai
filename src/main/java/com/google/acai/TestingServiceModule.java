@@ -17,12 +17,7 @@
 package com.google.acai;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.BindingAnnotation;
 import com.google.inject.multibindings.Multibinder;
-
-import java.lang.annotation.Retention;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Abstract module which can be used to bind instances of {@link TestingService}.
@@ -70,10 +65,5 @@ public abstract class TestingServiceModule extends AbstractModule {
     @Override protected void configure() {
       Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class);
     }
-  }
-
-  @Retention(RUNTIME)
-  @BindingAnnotation
-  @interface AcaiInternal {
   }
 }

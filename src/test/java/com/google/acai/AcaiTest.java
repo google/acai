@@ -57,7 +57,7 @@ public class AcaiTest {
 
   @Test
   public void orderedTest1_injectionHappenedAfterBeforeSuiteExecuted() {
-    assertThat(isInitialized).is(true);
+    assertThat(isInitialized).isSameAs(true);
   }
 
   @Test

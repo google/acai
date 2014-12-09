@@ -16,10 +16,10 @@
 
 package com.google.acai;
 
+import com.google.acai.TestScope.TestScopeModule;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.acai.TestingServiceModule.AcaiInternal;
 import com.google.acai.TestingServiceModule.NoopTestingServiceModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -95,7 +95,7 @@ public class Acai implements MethodRule {
       return environments.get(module);
     }
     Injector injector = Guice.createInjector(
-        instantiateModule(module), new NoopTestingServiceModule());
+        instantiateModule(module), new NoopTestingServiceModule(), new TestScopeModule());
     TestEnvironment testEnvironment = new TestEnvironment(injector,
         Iterables.transform(
             Dependencies.inOrder(
@@ -131,6 +131,7 @@ public class Acai implements MethodRule {
     private final Injector injector;
     private final ImmutableList<TestingServiceManager> testingServices;
     private final AtomicBoolean beforeSuiteHasRun = new AtomicBoolean(false);
+    private final TestScope testScope;
 
     /**
      * Initializes a newly created {@code TestEnvironment} with an {@code injector} and
@@ -139,6 +140,7 @@ public class Acai implements MethodRule {
     TestEnvironment(Injector injector, Iterable<TestingServiceManager> testingServices) {
       this.injector = checkNotNull(injector);
       this.testingServices = ImmutableList.copyOf(testingServices);
+      this.testScope = injector.getInstance(Key.get(TestScope.class, AcaiInternal.class));
     }
 
     void inject(Object target) {
@@ -155,14 +157,19 @@ public class Acai implements MethodRule {
     }
 
     void beforeTest() {
+      testScope.enter();
       for (TestingServiceManager testingService : testingServices) {
         testingService.beforeTest();
       }
     }
 
     void afterTest() {
-      for (TestingServiceManager testingService : testingServices.reverse()) {
-        testingService.afterTest();
+      try {
+        for (TestingServiceManager testingService : testingServices.reverse()) {
+          testingService.afterTest();
+        }
+      } finally {
+        testScope.exit();
       }
     }
   }
