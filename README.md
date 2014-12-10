@@ -1,5 +1,8 @@
 # Acai
 
+[![Build Status](https://travis-ci.org/google/acai.svg?branch=master)](
+https://travis-ci.org/google/acai)
+
 Disclaimer: This is not an official Google product.
 
 Acai makes it easy to write functional tests of your application
