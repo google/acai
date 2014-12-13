@@ -91,7 +91,7 @@ public class ExampleFunctionalTest {
   private static class MyServerRunner implements TestingService {
     @Inject private MyServer myServer;
 
-    @BeforeSuite public void startServer() {
+    @BeforeSuite void startServer() {
       myServer.start().awaitStarted();
     }
   }
@@ -99,7 +99,7 @@ public class ExampleFunctionalTest {
   private static class MyFakeDatabaseWiper implements TestingService {
     @Inject private MyFakeDatabse myFakeDatabase;
 
-    @AfterTest public void wipeDatabase() {
+    @AfterTest void wipeDatabase() {
       myFakeDatabase.wipe();
     }
   }
@@ -153,7 +153,7 @@ public class ExampleFrontendWebdriverTest {
   private static class MyFrontendRunner implements TestingService {
     @Inject private MyFrontendServer myFrontendServer;
 
-    @BeforeSuite public void startServer() {
+    @BeforeSuite void startServer() {
       myFrontendServer.start().awaitStarted();
     }
   }
@@ -161,7 +161,7 @@ public class ExampleFrontendWebdriverTest {
   private static class MyBackendRunner implements TestingService {
     @Inject private MyBackendServer myBackendServer;
 
-    @BeforeSuite public void startServer() {
+    @BeforeSuite void startServer() {
       myBackendServer.start().awaitStarted();
     }
   }
@@ -196,7 +196,7 @@ class WebdriverModule extends AbstractModule {
 
   @Provides
   @TestScoped
-  private WebDriver provideWebDriver() {
+  WebDriver provideWebDriver() {
     // Provide the driver here; precisely one instance will be
     // created per test case.
   }
