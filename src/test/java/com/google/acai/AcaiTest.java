@@ -23,9 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -40,7 +38,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private Statement statement;
   @Mock private FrameworkMethod frameworkMethod;
   @Mock private Service testingService;
