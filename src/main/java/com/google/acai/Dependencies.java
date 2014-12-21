@@ -67,7 +67,7 @@ class Dependencies {
       }
     }
     if (dependencyGraph.hasEdges()) {
-      throw new IllegalArgumentException("Cycle exists in @RunAfter dependencies.");
+      throw new IllegalArgumentException("Cycle exists in @DependsOn dependencies.");
     }
     return ordered.build();
   }
