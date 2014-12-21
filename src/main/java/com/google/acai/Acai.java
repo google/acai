@@ -17,10 +17,11 @@
 package com.google.acai;
 
 import com.google.acai.TestScope.TestScopeModule;
+import com.google.acai.TestingServiceModule.NoopTestingServiceModule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.acai.TestingServiceModule.NoopTestingServiceModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -121,6 +122,15 @@ public class Acai implements MethodRule {
     } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  /**
+   * Resets the static environment map.
+   *
+   * <p>For use in unit tests of Acai itself.
+   */
+  @VisibleForTesting static void testOnlyResetEnvironments() {
+    environments.clear();
   }
 
   /**

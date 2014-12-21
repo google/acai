@@ -94,28 +94,23 @@ public class TestingServiceManagerTest {
     int privateBeforeTestCount = 0;
     int beforeTestWithParameterCount = 0;
 
-    @BeforeSuite
-    public void incrementBeforeSuiteCount() {
+    @BeforeSuite public void incrementBeforeSuiteCount() {
       beforeSuiteCount++;
     }
 
-    @BeforeTest
-    public void incrementBeforeTestCount() {
+    @BeforeTest public void incrementBeforeTestCount() {
       beforeTestCount++;
     }
 
-    @BeforeTest
-    private void incrementPrivateBeforeTestCount() {
+    @BeforeTest private void incrementPrivateBeforeTestCount() {
       privateBeforeTestCount++;
     }
 
-    @BeforeTest
-    private void incrementBeforeTestWithParameterCount(int someParameter) {
+    @BeforeTest private void incrementBeforeTestWithParameterCount(int someParameter) {
       beforeTestWithParameterCount++;
     }
 
-    @AfterTest
-    public void incrementAfterTestCount() {
+    @AfterTest public void incrementAfterTestCount() {
       afterTestCount++;
     }
   }

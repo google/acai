@@ -16,134 +16,203 @@
 
 package com.google.acai;
 
+import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
-import org.junit.After;
+import com.google.inject.Singleton;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.Statement;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.lang.annotation.Retention;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assert_;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(NAME_ASCENDING)
+@RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
-  @Rule public Acai acai = new Acai(TestModule.class);
-
-  @Inject @ExampleBindingAnnotation private String injectedValue;
-  @Inject @IsInitialized private boolean isInitialized;
+  @Rule public ExpectedException thrown = ExpectedException.none();
+  @Mock private Statement statement;
+  @Mock private FrameworkMethod frameworkMethod;
+  @Mock private Service testingService;
 
   @Before
-  public void checkAcaiRunsBeforeTestSetup() {
-    assertThat(injectedValue).isNotNull();
-    assertThat(TestingServiceA.beforeSuiteCount).is(1);
-  }
-
-  @After
-  public void noopAfter() {
-    // Does nothing, exists purely to check Acai is not
-    // negatively impacted by its presence.
+  public void clearMethodCallCounters() {
+    Service.methodCalls = MethodCalls.create();
+    DependentService.methodCalls = MethodCalls.create();
+    Acai.testOnlyResetEnvironments();
   }
 
   @Test
-  public void orderedTest1_injectionHappenedAfterBeforeSuiteExecuted() {
-    assertThat(isInitialized).isSameAs(true);
+  public void serviceMethodsRun() throws Throwable {
+    Acai acai = new Acai(TestModule.class);
+
+    assertThat(Service.methodCalls).isEqualTo(MethodCalls.create());
+
+    acai.apply(new Statement() {
+      @Override public void evaluate() throws Throwable {
+        assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 0));
+      }
+    }, frameworkMethod, new Object()).evaluate();
+
+    assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
   }
 
   @Test
-  public void orderedTest2_testingServiceMethodsExecuted() {
-    assertThat(TestingServiceA.beforeSuiteCount).is(1);
-    assertThat(TestingServiceA.beforeTestCount).is(2);
-    assertThat(TestingServiceA.afterTestCount).is(1);
+  public void beforeSuiteRunOnceOnly() throws Throwable {
+    new Acai(TestModule.class).apply(statement, frameworkMethod, new Object()).evaluate();
+    new Acai(TestModule.class).apply(statement, frameworkMethod, new Object()).evaluate();
 
-    assertThat(TestingServiceB.beforeSuiteCount).is(1);
-    assertThat(TestingServiceB.beforeTestCount).is(2);
-    assertThat(TestingServiceB.afterTestCount).is(1);
+    assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 2, 2));
   }
 
   @Test
-  public void orderedTest3_canBeInjected() {
-    assertThat(injectedValue).isEqualTo("injected-value");
+  public void testCaseIsInjected() throws Throwable {
+    ExampleTest test = new ExampleTest();
+
+    new Acai(TestModule.class).apply(statement, frameworkMethod, test).evaluate();
+
+    assertThat(test.injected).isEqualTo("injected-value");
   }
 
+  @Test
+  public void testsAreInjectedAfterRunningBeforeSuite() throws Throwable {
+    ExampleTest test = new ExampleTest();
+
+    new Acai(TestModule.class).apply(statement, frameworkMethod, test).evaluate();
+
+    // Check injection happened after Service.initialized was set to true
+    // by @BeforeSuite method.
+    assertThat(test.initialized).isEqualTo(true);
+  }
+
+  @Test
+  public void servicesRunInDependencyOrder() throws Throwable {
+    new Acai(DependentServiceModule.class)
+        .apply(statement, frameworkMethod, new Object()).evaluate();
+
+    // Sanity check the services ran, the ordering assertions are
+    // within DependentService itself.
+    assertThat(DependentService.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
+    assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
+  }
 
   private static class TestModule extends AbstractModule {
     @Override protected void configure() {
-      bindConstant().annotatedWith(ExampleBindingAnnotation.class).to("injected-value");
-      bind(InitializingTestingService.class).in(Singleton.class);
+      bindConstant().annotatedWith(TestBindingAnnotation.class).to("injected-value");
+      bind(Service.class).in(Singleton.class);
       install(new TestingServiceModule() {
         @Override protected void configureTestingServices() {
-          bindTestingService(TestingServiceA.class);
-          bindTestingService(TestingServiceB.class);
-          bindTestingService(InitializingTestingService.class);
+          bindTestingService(Service.class);
         }
       });
     }
 
-    @Provides
-    @IsInitialized
-    private boolean provideIsInitialized(InitializingTestingService service) {
+    @Provides @IsInitialized boolean provideIsInitialized(Service service) {
       return service.initialized;
     }
   }
 
-  private static class TestingServiceA implements TestingService {
-    static int beforeSuiteCount = 0;
-    static int beforeTestCount = 0;
-    static int afterTestCount = 0;
-
-    @BeforeSuite public void incrementBeforeSuiteCount() {
-      beforeSuiteCount++;
+  private static class DependentServiceModule extends AbstractModule {
+    @Override protected void configure() {
+      install(new TestingServiceModule() {
+        @Override protected void configureTestingServices() {
+          bindTestingService(DependentService.class);
+          bindTestingService(Service.class);
+        }
+      });
     }
 
-    @BeforeTest public void incrementBeforeTestCount() {
-      beforeTestCount++;
-    }
-
-    @AfterTest public void incrementAfterTestCount() {
-      afterTestCount++;
+    @Provides @IsInitialized boolean provideIsInitialized(Service service) {
+      return service.initialized;
     }
   }
 
-  private static class TestingServiceB implements TestingService {
-    static int beforeSuiteCount = 0;
-    static int beforeTestCount = 0;
-    static int afterTestCount = 0;
-
-    @BeforeSuite public void incrementBeforeSuiteCount() {
-      beforeSuiteCount++;
-    }
-
-    @BeforeTest public void incrementBeforeTestCount() {
-      beforeTestCount++;
-    }
-
-    @AfterTest public void incrementAfterTestCount() {
-      afterTestCount++;
-    }
-  }
-
-  private static class InitializingTestingService implements TestingService {
+  private static class Service implements TestingService {
+    static MethodCalls methodCalls = MethodCalls.create();
     boolean initialized = false;
 
-    @BeforeSuite public void incrementBeforeSuiteCount() {
+    @BeforeSuite private void beforeSuite() {
       initialized = true;
+      methodCalls = methodCalls.incrementBeforeSuite();
     }
+
+    @BeforeTest private void beforeTest() {
+      methodCalls = methodCalls.incrementBeforeTest();
+    }
+
+    @AfterTest private void afterTest() {
+      methodCalls = methodCalls.incrementAfterTest();
+    }
+  }
+
+  @DependsOn(Service.class)
+  private static class DependentService implements TestingService {
+    static MethodCalls methodCalls = MethodCalls.create();
+
+    @BeforeSuite private void beforeSuite() {
+      assert_().withFailureMessage("DependentService should be run after Service")
+          .that(Service.methodCalls.beforeSuite()).isEqualTo(methodCalls.beforeSuite() + 1);
+      methodCalls = methodCalls.incrementBeforeSuite();
+    }
+
+    @BeforeTest private void beforeTest() {
+      assert_().withFailureMessage("DependentService should be run after Service")
+        .that(Service.methodCalls.beforeTest()).isEqualTo(methodCalls.beforeTest() + 1);
+      methodCalls = methodCalls.incrementBeforeTest();
+    }
+
+    @AfterTest private void afterTest() {
+      methodCalls = methodCalls.incrementAfterTest();
+      assert_().withFailureMessage("Service should be cleaned up after DependentService")
+          .that(Service.methodCalls.afterTest()).isEqualTo(methodCalls.afterTest() - 1);
+    }
+  }
+
+  @AutoValue
+  static abstract class MethodCalls {
+    abstract int beforeSuite();
+    abstract int beforeTest();
+    abstract int afterTest();
+
+    static MethodCalls create() {
+      return new AutoValue_AcaiTest_MethodCalls(0, 0, 0);
+    }
+
+    static MethodCalls create(int beforeSuite, int beforeTest, int afterTest) {
+      return new AutoValue_AcaiTest_MethodCalls(beforeSuite, beforeTest, afterTest);
+    }
+
+    MethodCalls incrementBeforeSuite() {
+      return create(beforeSuite() + 1, beforeTest(), afterTest());
+    }
+
+    MethodCalls incrementBeforeTest() {
+      return create(beforeSuite(), beforeTest() + 1, afterTest());
+    }
+
+    MethodCalls incrementAfterTest() {
+      return create(beforeSuite(), beforeTest(), afterTest() + 1);
+    }
+  }
+
+  private static class ExampleTest {
+    @Inject @TestBindingAnnotation String injected;
+    @Inject @IsInitialized boolean initialized;
   }
 
   @Retention(RUNTIME)
   @BindingAnnotation
-  private @interface ExampleBindingAnnotation {
+  private @interface TestBindingAnnotation {
   }
 
   @Retention(RUNTIME)

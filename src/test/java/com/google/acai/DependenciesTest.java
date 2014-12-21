@@ -78,7 +78,7 @@ public class DependenciesTest {
         Dependencies.inOrder(ImmutableSet.copyOf(testingServices));
 
     assertThat(ordered).has().exactlyAs(testingServices);
-    assertThat(Iterables.getLast(ordered)).isA(Last.class);
+    assertThat(Iterables.getLast(ordered)).isInstanceOf(Last.class);
   }
 
   @DependsOn(C.class) private static class A implements TestingService {}
