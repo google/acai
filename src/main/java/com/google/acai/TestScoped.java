@@ -16,8 +16,7 @@
 
 package com.google.acai;
 
-import com.google.inject.ScopeAnnotation;
-
+import javax.inject.Scope;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -35,6 +34,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
-@ScopeAnnotation
+@Scope
 public @interface TestScoped {
 }

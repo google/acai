@@ -19,9 +19,7 @@ package com.google.acai;
 import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
-import com.google.inject.Inject;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +28,8 @@ import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.lang.annotation.Retention;
 
 import static com.google.common.truth.Truth.assertThat;

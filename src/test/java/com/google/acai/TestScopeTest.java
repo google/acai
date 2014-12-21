@@ -17,7 +17,6 @@
 package com.google.acai;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import org.junit.Rule;
@@ -28,6 +27,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.inject.Inject;
 
 import static com.google.common.truth.Truth.assertThat;
 

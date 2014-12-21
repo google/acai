@@ -110,5 +110,11 @@
       <version>1.10.8</version>
       <scope>test</scope>
     </dependency>
+    <!-- JSR-330 --> 
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
   </dependencies>
 </project>
