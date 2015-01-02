@@ -142,7 +142,7 @@ public class ExampleFrontendWebdriverTest {
 
       install(new TestingServiceModule() {
         @Override protected void configureTestingServices() {
-          bindTestingService(MyServerRunner.class);
+          bindTestingService(MyFrontendRunner.class);
           bindTestingService(MyBackendRunner.class);
         }
       });
@@ -216,7 +216,6 @@ class WebdriverModule extends AbstractModule {
     }
   }
 }
-
 ```
 
 One important point to note when using `@TestScoped` bindings is that
