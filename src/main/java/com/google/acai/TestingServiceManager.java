@@ -76,7 +76,9 @@ class TestingServiceManager {
       try {
         method.setAccessible(true);
         method.invoke(testingService);
-      } catch (IllegalAccessException | InvocationTargetException e) {
+      } catch (InvocationTargetException e) {
+        Throwables.propagate(e.getCause());
+      } catch (IllegalAccessException e) {
         Throwables.propagate(e);
       }
     }
