@@ -19,6 +19,7 @@ package com.google.acai;
 import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Provides;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +36,8 @@ import java.lang.annotation.Retention;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assert_;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
@@ -43,9 +46,10 @@ public class AcaiTest {
   @Mock private Service testingService;
 
   @Before
-  public void clearMethodCallCounters() {
+  public void cleanup() {
     Service.methodCalls = MethodCalls.create();
     DependentService.methodCalls = MethodCalls.create();
+    ServiceWithFailingBeforeTest.shouldFail = true;
     Acai.testOnlyResetEnvironments();
   }
 
@@ -79,6 +83,36 @@ public class AcaiTest {
     new Acai(TestModule.class).apply(statement, frameworkMethod, test).evaluate();
 
     assertThat(test.injected).isEqualTo("injected-value");
+  }
+
+  @Test
+  public void failingTestInjectionDoesNotAffectSubsequentTests() throws Throwable {
+    Acai acai = new Acai(TestModule.class);
+    try {
+      acai.apply(statement, frameworkMethod, new TestWithUnsatisfiedBinding()).evaluate();
+      assert_().fail("Expected ConfigurationException to be thrown.");
+    } catch (ConfigurationException e) {
+      // Expected: TestWithUnsatisfiedBinding contains binding not satisfied by TestModule.
+    }
+
+    acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
+
+    verify(statement, times(1)).evaluate();
+  }
+
+  @Test
+  public void failingBeforeTestMethodDoesNotAffectSubsequentTests() throws Throwable {
+    Acai acai = new Acai(FailingBeforeTestModule.class);
+    try {
+      acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
+      assert_().fail("Expected TestException to be thrown.");
+    } catch (TestException e) {
+      // Expected: ServiceWithFailingBeforeTest throws TestException in @BeforeTest.
+    }
+
+    ServiceWithFailingBeforeTest.shouldFail = false;
+    acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
+    verify(statement, times(1)).evaluate();
   }
 
   @Test
@@ -202,9 +236,31 @@ public class AcaiTest {
     }
   }
 
+  private static class TestWithUnsatisfiedBinding {
+    @Inject @TestBindingAnnotation ExampleTest unsatisfiedBinding;
+  }
+
   private static class ExampleTest {
     @Inject @TestBindingAnnotation String injected;
     @Inject @IsInitialized boolean initialized;
+  }
+
+  private static class TestException extends RuntimeException { }
+
+  private static class ServiceWithFailingBeforeTest implements TestingService {
+    static boolean shouldFail = true;
+    @BeforeTest void failingBeforeTest() {
+      if (shouldFail) {
+        throw new TestException();
+      }
+    }
+  }
+
+  private static class FailingBeforeTestModule extends TestingServiceModule {
+    @Override protected void configureTestingServices() {
+      install(new TestModule());
+      bindTestingService(ServiceWithFailingBeforeTest.class);
+    }
   }
 
   @Retention(RUNTIME)

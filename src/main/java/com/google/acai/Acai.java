@@ -76,12 +76,17 @@ public class Acai implements MethodRule {
       @Override public void evaluate() throws Throwable {
         TestEnvironment testEnvironment = getOrCreateTestEnvironment(module);
         testEnvironment.beforeSuiteIfNotAlreadyRun();
-        testEnvironment.beforeTest();
-        testEnvironment.inject(target);
+        testEnvironment.enterTestScope();
         try {
-          statement.evaluate();
+          testEnvironment.beforeTest();
+          testEnvironment.inject(target);
+          try {
+            statement.evaluate();
+          } finally {
+            testEnvironment.afterTest();
+          }
         } finally {
-          testEnvironment.afterTest();
+          testEnvironment.exitTestScope();
         }
       }
     };
@@ -167,19 +172,22 @@ public class Acai implements MethodRule {
     }
 
     void beforeTest() {
-      testScope.enter();
       for (TestingServiceManager testingService : testingServices) {
         testingService.beforeTest();
       }
     }
 
+    void enterTestScope() {
+      testScope.enter();
+    }
+
+    void exitTestScope() {
+      testScope.exit();
+    }
+
     void afterTest() {
-      try {
-        for (TestingServiceManager testingService : testingServices.reverse()) {
-          testingService.afterTest();
-        }
-      } finally {
-        testScope.exit();
+      for (TestingServiceManager testingService : testingServices.reverse()) {
+        testingService.afterTest();
       }
     }
   }
