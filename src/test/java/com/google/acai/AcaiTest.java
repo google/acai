@@ -92,7 +92,7 @@ public class AcaiTest {
       acai.apply(statement, frameworkMethod, new TestWithUnsatisfiedBinding()).evaluate();
       assert_().fail("Expected ConfigurationException to be thrown.");
     } catch (ConfigurationException e) {
-      // Expected: TestWithUnsatisfiedBinding contains binding not satisfied by TestModule.
+      // Expected: TestWithUnsatisfiedBinding requires binding not satisfied by TestModule.
     }
 
     acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
