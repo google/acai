@@ -27,21 +27,22 @@ import com.google.inject.Scope;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Scope for bindings annotated with {@link TestScoped}.
  */
 class TestScope implements Scope {
-  private volatile ConcurrentMap<Key<?>, Object> values = null;
+  private AtomicReference<ConcurrentMap<Key<?>, Object>> values = new AtomicReference<>();
 
   void enter() {
-    checkState(values == null, "TestScope is already in progress.");
-    values = new ConcurrentHashMap<>();
+    checkState(
+        values.getAndSet(new ConcurrentHashMap<Key<?>, Object>()) == null,
+        "TestScope is already in progress.");
   }
 
   void exit() {
-    checkState(values != null, "TestScope not in progress");
-    values = null;
+    checkState(values.getAndSet(null) != null, "TestScope not in progress");
   }
 
   @Override public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscopedProvider) {
@@ -61,7 +62,7 @@ class TestScope implements Scope {
   }
 
   private <T> Map<Key<?>, Object> getScopedObjectMap(Key<T> key) {
-    Map<Key<?>, Object> scopedObjects = values;
+    Map<Key<?>, Object> scopedObjects = values.get();
     if (scopedObjects == null) {
       throw new OutOfScopeException("Attempt to inject @TestScoped binding outside test: " + key);
     }
