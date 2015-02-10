@@ -61,10 +61,11 @@ class TestScope implements Scope {
   }
 
   private <T> Map<Key<?>, Object> getScopedObjectMap(Key<T> key) {
-    if (values == null) {
+    Map<Key<?>, Object> scopedObjects = values;
+    if (scopedObjects == null) {
       throw new OutOfScopeException("Attempt to inject @TestScoped binding outside test: " + key);
     }
-    return values;
+    return scopedObjects;
   }
 
   static class TestScopeModule extends AbstractModule {
