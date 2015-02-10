@@ -16,31 +16,32 @@
 
 package com.google.acai;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkState;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Scope for bindings annotated with {@link TestScoped}.
  */
 class TestScope implements Scope {
-  private final ThreadLocal<Map<Key<?>, Object>> values = new ThreadLocal<>();
+  private volatile ConcurrentMap<Key<?>, Object> values = null;
 
   void enter() {
-    checkState(values.get() == null, "TestScope is already in progress.");
-    values.set(new HashMap<Key<?>, Object>());
+    checkState(values == null, "TestScope is already in progress.");
+    values = new ConcurrentHashMap<>();
   }
 
   void exit() {
-    checkState(values.get() != null, "TestScope not in progress");
-    values.remove();
+    checkState(values != null, "TestScope not in progress");
+    values = null;
   }
 
   @Override public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscopedProvider) {
@@ -60,11 +61,10 @@ class TestScope implements Scope {
   }
 
   private <T> Map<Key<?>, Object> getScopedObjectMap(Key<T> key) {
-    Map<Key<?>, Object> scopedObjects = values.get();
-    if (scopedObjects == null) {
+    if (values == null) {
       throw new OutOfScopeException("Attempt to inject @TestScoped binding outside test: " + key);
     }
-    return scopedObjects;
+    return values;
   }
 
   static class TestScopeModule extends AbstractModule {
