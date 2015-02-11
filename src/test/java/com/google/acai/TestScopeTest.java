@@ -16,9 +16,13 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import com.google.common.base.Throwables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,9 +32,9 @@ import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
+import java.util.concurrent.CountDownLatch;
 
-import static com.google.common.truth.Truth.assertThat;
+import javax.inject.Inject;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestScopeTest {
@@ -77,6 +81,43 @@ public class TestScopeTest {
     assertThat(ValidTestingService.valueFromBeforeTest).isNotNull();
     assertThat(ValidTestingService.valueFromAfterTest)
         .isSameAs(ValidTestingService.valueFromBeforeTest);
+  }
+
+  @Test
+  public void parallelTestsReceiveDifferentInstances() throws Throwable {
+    final FakeTestClass testOne = new FakeTestClass();
+    FakeTestClass testTwo = new FakeTestClass();
+    final CountDownLatch testStarted = new CountDownLatch(1);
+    final CountDownLatch endTest = new CountDownLatch(1);
+
+    Thread testOneThread = new Thread(new Runnable() {
+      @Override public void run() {
+        try {
+          new Acai(EmptyTestModule.class).apply(new Statement() {
+            @Override public void evaluate() throws Throwable {
+              testStarted.countDown();
+              endTest.await();
+            }
+          }, frameworkMethod, testOne).evaluate();
+        } catch (Throwable throwable) {
+          throw Throwables.propagate(throwable);
+        }
+      }
+    });
+
+    testOneThread.start();
+
+    // Wait for test one to be running.
+    testStarted.await();
+    new Acai(EmptyTestModule.class).apply(statement, frameworkMethod, testTwo).evaluate();
+
+    // Allow test one to complete now that testTwo has run in parallel.
+    endTest.countDown();
+    testOneThread.join();
+
+    assertThat(testOne.instanceOne).isNotNull();
+    assertThat(testOne.instanceOne).isNotNull();
+    assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
   }
 
   private static class EmptyTestModule extends AbstractModule {
