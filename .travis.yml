@@ -4,5 +4,3 @@ jdk:
   - openjdk7
 notifications:
   email: false
-after_success:
-  - mvn clean -DTRAVIS_JOB_ID=$TRAVIS_JOB_ID cobertura:cobertura coveralls:report
