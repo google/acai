@@ -4,6 +4,8 @@
 https://travis-ci.org/google/acai)
 [![Coverage Status](https://coveralls.io/repos/google/acai/badge.svg)](
 https://coveralls.io/r/google/acai?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.google.acai/acai/badge.svg)](
+https://maven-badges.herokuapp.com/maven-central/com.google.acai/acai)
 
 Acai makes it easy to write functional tests of your application
 with JUnit4 and Guice.
