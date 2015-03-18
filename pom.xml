@@ -35,6 +35,8 @@
     </license>
   </licenses>
 
+  <packaging>jar</packaging>
+
   <scm>
     <connection>scm:git:git@github.com:google/acai.git</connection>
     <developerConnection>scm:git:git@github.com:google/acai.git</developerConnection>
