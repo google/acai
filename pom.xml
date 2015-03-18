@@ -20,9 +20,35 @@
             http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.google</groupId>
+  <groupId>com.google.acai</groupId>
   <artifactId>acai</artifactId>
   <version>0.1-SNAPSHOT</version>
+
+  <name>Acai</name>
+  <description>Testing library for JUnit4 and Guice.</description>
+  <url>https://github.com/google/acai</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:google/acai.git</connection>
+    <developerConnection>scm:git:git@github.com:google/acai.git</developerConnection>
+    <url>https://github.com/google/acai</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Nicholas Lativy</name>
+      <email>nlativy@google.com</email>
+      <organization>Google</organization>
+      <organizationUrl>http://www.google.com</organizationUrl>
+    </developer>
+  </developers>
 
   <build>
     <plugins>
