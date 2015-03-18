@@ -26,7 +26,7 @@ rather than using Acai.
 
 ## Installation
 Add a dependency on `com.google.acai:acai` in your build system to fetch Acai
-automatically from Maven Central. For example with Maven add the following to
+automatically from Maven Central. For example, with Maven add the following to
 your `pom.xml`:
 
 ```XML
