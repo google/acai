@@ -3,8 +3,6 @@
 [![Build Status](https://travis-ci.org/google/acai.svg?branch=master)](
 https://travis-ci.org/google/acai)
 
-Disclaimer: This is not an official Google product.
-
 Acai makes it easy to write functional tests of your application
 with JUnit4 and Guice.
 
@@ -23,6 +21,25 @@ complete system works correctly. It can also be useful for tests which validate
 the integration of a small set of components. Note however that for smaller
 unit-tests we generally recommend you create the class under test manually
 rather than using Acai.
+
+## Installation
+Add a dependency on `com.google.acai:acai` in your build system to fetch Acai
+automatically from Maven Central. For example with Maven add the following to
+your `pom.xml`:
+
+```XML
+<dependency>
+  <groupId>com.google.acai</groupId>
+  <artifactId>acai</artifactId>
+  <version>0.1</version>
+  <scope>test</scope>
+</dependency>
+```
+
+See the [artifact details on Maven Central](
+http://search.maven.org/#artifactdetails%7Ccom.google.acai%7Cacai%7C0.1%7Cjar)
+for dependency information for other build systems or to simply download the
+jars.
 
 ## Using Acai to inject a test
 The simplest test using Acai doesn't register any TestingService bindings
@@ -251,3 +268,6 @@ those of another `TestingService`. This provides a simple declarative mechanism
 to order service startup in tests.
 
 Refer to the examples above to see the API in action.
+
+## Disclaimer
+This is not an official Google product.
