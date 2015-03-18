@@ -271,5 +271,11 @@ to order service startup in tests.
 
 Refer to the examples above to see the API in action.
 
+## Contributing
+We'd love to accept your patches and contributions to this project. There are a
+just a few small guidelines you need to follow. See the [CONTRIBUTING.md](
+https://github.com/google/acai/blob/master/CONTRIBUTING.md) file for more
+information.
+
 ## Disclaimer
 This is not an official Google product.
