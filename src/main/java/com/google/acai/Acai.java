@@ -123,8 +123,10 @@ public class Acai implements MethodRule {
       return constructor.newInstance();
     } catch (NoSuchMethodException e) {
       throw new RuntimeException(
-          "Module provided by user does not have zero argument constructor.");
-    } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+          "Module provided by user does not have zero argument constructor.", e);
+    } catch (InvocationTargetException e) {
+      throw Throwables.propagate(e.getCause());
+    } catch (InstantiationException | IllegalAccessException e) {
       throw Throwables.propagate(e);
     }
   }

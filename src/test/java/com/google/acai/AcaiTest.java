@@ -22,7 +22,9 @@ import com.google.inject.BindingAnnotation;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Provides;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -41,6 +43,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
+  @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private Statement statement;
   @Mock private FrameworkMethod frameworkMethod;
   @Mock private Service testingService;
@@ -135,6 +138,20 @@ public class AcaiTest {
     // within DependentService itself.
     assertThat(DependentService.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
     assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
+  }
+
+  @Test
+     public void usefulErrorMessageWhenModuleMissingZeroArgConstructor() throws Throwable {
+    thrown.expectMessage("does not have zero argument constructor");
+    new Acai(ModuleWithoutZeroArgumentConstructor.class)
+        .apply(statement, frameworkMethod, new Object()).evaluate();
+  }
+
+  @Test
+  public void rethrowsExceptionThrownByModuleConstructor() throws Throwable {
+    thrown.expect(TestException.class);
+    new Acai(ModuleWithThrowingConstructor.class)
+        .apply(statement, frameworkMethod, new Object()).evaluate();
   }
 
   private static class TestModule extends AbstractModule {
@@ -260,6 +277,26 @@ public class AcaiTest {
     @Override protected void configureTestingServices() {
       install(new TestModule());
       bindTestingService(ServiceWithFailingBeforeTest.class);
+    }
+  }
+
+  private static class ModuleWithoutZeroArgumentConstructor extends AbstractModule {
+    ModuleWithoutZeroArgumentConstructor(String argument) {
+      // No-op.
+    }
+
+    @Override protected void configure() {
+      // No-op.
+    }
+  }
+
+  private static class ModuleWithThrowingConstructor extends AbstractModule {
+    ModuleWithThrowingConstructor() {
+      throw new TestException();
+    }
+
+    @Override protected void configure() {
+      // No-op.
     }
   }
 
