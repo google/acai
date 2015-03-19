@@ -89,8 +89,8 @@ class TestingServiceManager {
   private ImmutableList<Method> methodsAnnotated(Class<? extends Annotation> annotation) {
     ImmutableList.Builder<Method> methods = ImmutableList.builder();
     for (Class<?> clazz = testingService.getClass();
-        clazz != null && TestingService.class.isAssignableFrom(clazz);
-        clazz = clazz.getSuperclass()) {
+         TestingService.class.isAssignableFrom(clazz);
+         clazz = clazz.getSuperclass()) {
       for (Method method : clazz.getDeclaredMethods()) {
         if (method.isAnnotationPresent(annotation) && isUsable(method)) {
           methods.add(method);

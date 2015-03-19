@@ -111,6 +111,12 @@ public class TestingServiceManagerTest {
     }).beforeTest();
   }
 
+  @Test
+  public void staticMethodsNotInvoked() {
+    new TestingServiceManager(new ServiceWithStaticMethod()).beforeSuite();
+    assertThat(ServiceWithStaticMethod.staticBeforeSuiteMethodInvoked).isFalse();
+  }
+
   private static class TestRuntimeException extends RuntimeException { }
 
   private static class TestException extends Exception { }
@@ -140,6 +146,14 @@ public class TestingServiceManagerTest {
 
     @AfterTest public void incrementAfterTestCount() {
       afterTestCount++;
+    }
+  }
+
+  private static class ServiceWithStaticMethod implements TestingService {
+    static boolean staticBeforeSuiteMethodInvoked = false;
+    @BeforeSuite
+    static void willNotBeInvoked() {
+      staticBeforeSuiteMethodInvoked = true;
     }
   }
 }
