@@ -29,7 +29,7 @@ rather than using Acai.
 ## Installation
 Add a dependency on `com.google.acai:acai` in your build system to fetch Acai
 automatically from Maven Central. For example, with Maven add the following to
-your `pom.xml`:
+your dependencies in `pom.xml`:
 
 ```XML
 <dependency>
@@ -41,7 +41,7 @@ your `pom.xml`:
 ```
 
 See the [artifact details on Maven Central](
-http://search.maven.org/#artifactdetails%7Ccom.google.acai%7Cacai%7C0.1%7Cjar)
+http://search.maven.org/#artifactdetails|com.google.acai|acai|0.1|)
 for dependency information for other build systems or to simply download the
 jars.
 
