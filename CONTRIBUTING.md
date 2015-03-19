@@ -4,7 +4,6 @@ We'd love to accept your patches and contributions to this project.  There are
 a just a few small guidelines you need to follow.
 
 ## Contributor License Agreement
-
 Contributions to any Google project must be accompanied by a Contributor
 License Agreement.  This is not a copyright **assignment**, it simply gives
 Google permission to use and redistribute your contributions as part of the
@@ -24,9 +23,14 @@ again.
 [individual CLA]: https://developers.google.com/open-source/cla/individual
 [corporate CLA]: https://developers.google.com/open-source/cla/corporate
 
+## Code Style
+The Acai codebase follows the [Google Java Style](
+https://google-styleguide.googlecode.com/svn/trunk/javaguide.html). You can
+download formatter configurations for Eclipse and IntelliJ from the
+[google-styleguide repository](
+https://code.google.com/p/google-styleguide/source/browse/trunk).
 
 ## Submitting a patch
-
   1. It's generally best to start by opening a new issue describing the bug or
      feature you're intending to fix.  Even if you think it's relatively minor,
      we would like to give you feedback early.  Mention in the initial
