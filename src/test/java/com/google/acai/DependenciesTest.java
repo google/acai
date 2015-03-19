@@ -41,7 +41,7 @@ public class DependenciesTest {
     Set<TestingService> testingServices =
         ImmutableSet.of(new ServiceA(), new ServiceB(), new ServiceA());
 
-    assertThat(Dependencies.inOrder(testingServices)).has().exactlyAs(testingServices);
+    assertThat(Dependencies.inOrder(testingServices)).containsExactlyElementsIn(testingServices);
   }
 
   private static class Service1 implements TestingService {}
@@ -54,7 +54,7 @@ public class DependenciesTest {
         ImmutableList.of(new Service1(), new Service2(), new Service3());
 
     assertThat(Dependencies.inOrder(ImmutableSet.copyOf(testingServices)))
-        .has().exactlyAs(testingServices).inOrder();
+        .containsExactlyElementsIn(testingServices).inOrder();
   }
 
   @Test
@@ -64,7 +64,7 @@ public class DependenciesTest {
         ImmutableList.of(new Service2(), new Service3());
 
     assertThat(Dependencies.inOrder(ImmutableSet.copyOf(testingServices)))
-        .has().exactlyAs(testingServices).inOrder();
+        .containsExactlyElementsIn(testingServices).inOrder();
   }
 
   @DependsOn({ServiceA.class, ServiceB.class}) private static class Last implements TestingService {}
@@ -77,7 +77,7 @@ public class DependenciesTest {
     ImmutableList<TestingService> ordered =
         Dependencies.inOrder(ImmutableSet.copyOf(testingServices));
 
-    assertThat(ordered).has().exactlyAs(testingServices);
+    assertThat(ordered).containsExactlyElementsIn(testingServices);
     assertThat(Iterables.getLast(ordered)).isInstanceOf(Last.class);
   }
 
