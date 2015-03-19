@@ -27,6 +27,10 @@
   <description>Testing library for JUnit4 and Guice.</description>
   <url>https://github.com/google/acai</url>
 
+  <prerequisites>
+    <maven>3.0.4</maven>
+  </prerequisites>
+
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
@@ -109,7 +113,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
+        <version>2.4</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -122,7 +126,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
+        <version>2.10.2</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -146,12 +150,12 @@
       <plugin>
         <groupId>org.eluder.coveralls</groupId>
         <artifactId>coveralls-maven-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.1.0</version>
       </plugin>
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.3</version>
+        <version>1.6.5</version>
         <extensions>true</extensions>
         <configuration>
            <serverId>ossrh</serverId>
@@ -162,7 +166,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.0</version>
+        <version>2.1</version>
         <configuration>
           <rulesUri>file://${basedir}/version-rules.xml</rulesUri>
         </configuration>
@@ -240,7 +244,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.5</version>
+            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
