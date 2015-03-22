@@ -150,7 +150,7 @@ class Dependencies {
     }
 
     /**
-     * Returns true if there are no directed edges
+     * Returns true if there are no directed edges whose tail is {@code vertex}.
      */
     boolean isRootVertex(T vertex) {
       checkArgument(vertices.contains(vertex));
