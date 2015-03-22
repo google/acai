@@ -138,7 +138,7 @@ class Dependencies {
      * Removes the directed edge from {@code tail} to {@code head}.
      */
     void removeEdge(T tail, T head) {
-      checkState(successors.remove(tail, head), "Attempt to remove non-existent edge");
+      checkArgument(successors.remove(tail, head), "Attempt to remove non-existent edge");
       checkState(predecessors.remove(head, tail), "Graph state was invalid.");
     }
 
