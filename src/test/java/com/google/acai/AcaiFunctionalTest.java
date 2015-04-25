@@ -42,15 +42,15 @@ public class AcaiFunctionalTest {
   @Before
   public void checkAcaiRunsBeforeTestSetup() {
     assertThat(injectedValue).isNotNull();
-    assertThat(Service.beforeSuiteCount).is(1);
+    assertThat(Service.beforeSuiteCount).isEqualTo(1);
   }
 
   @Test
   public void checkAcaiWorksAsJUnitRule() {
     assertThat(injectedValue).isEqualTo("injected-value");
-    assertThat(Service.beforeSuiteCount).is(1);
-    assertThat(Service.beforeTestCount).is(1);
-    assertThat(Service.afterTestCount).is(0);
+    assertThat(Service.beforeSuiteCount).isEqualTo(1);
+    assertThat(Service.beforeTestCount).isEqualTo(1);
+    assertThat(Service.afterTestCount).isEqualTo(0);
   }
 
   private static class TestModule extends AbstractModule {

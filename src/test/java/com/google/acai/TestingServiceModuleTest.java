@@ -43,7 +43,7 @@ public class TestingServiceModuleTest {
     Set<TestingService> boundServices = injector.getInstance(
         new Key<Set<TestingService>>(AcaiInternal.class) { });
 
-    assertThat(boundServices).has().exactly(serviceInstance, new ServiceToBindByClass());
+    assertThat(boundServices).containsExactly(serviceInstance, new ServiceToBindByClass());
   }
 
   private static class ServiceToBindByClass implements TestingService {

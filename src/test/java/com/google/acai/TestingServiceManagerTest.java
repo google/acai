@@ -35,9 +35,9 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeSuite();
 
-    assertThat(testingService.beforeSuiteCount).is(1);
-    assertThat(testingService.beforeTestCount).is(0);
-    assertThat(testingService.afterTestCount).is(0);
+    assertThat(testingService.beforeSuiteCount).isEqualTo(1);
+    assertThat(testingService.beforeTestCount).isEqualTo(0);
+    assertThat(testingService.afterTestCount).isEqualTo(0);
   }
 
   @Test
@@ -46,9 +46,9 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.beforeSuiteCount).is(0);
-    assertThat(testingService.beforeTestCount).is(1);
-    assertThat(testingService.afterTestCount).is(0);
+    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeTestCount).isEqualTo(1);
+    assertThat(testingService.afterTestCount).isEqualTo(0);
   }
 
   @Test
@@ -57,9 +57,9 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).afterTest();
 
-    assertThat(testingService.beforeSuiteCount).is(0);
-    assertThat(testingService.beforeTestCount).is(0);
-    assertThat(testingService.afterTestCount).is(1);
+    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeTestCount).isEqualTo(0);
+    assertThat(testingService.afterTestCount).isEqualTo(1);
   }
 
   @Test
@@ -68,7 +68,7 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.privateBeforeTestCount).is(1);
+    assertThat(testingService.privateBeforeTestCount).isEqualTo(1);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.beforeTestWithParameterCount).is(0);
+    assertThat(testingService.beforeTestWithParameterCount).isEqualTo(0);
   }
 
   @Test
@@ -86,9 +86,9 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.beforeSuiteCount).is(0);
-    assertThat(testingService.beforeTestCount).is(1);
-    assertThat(testingService.afterTestCount).is(0);
+    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeTestCount).isEqualTo(1);
+    assertThat(testingService.afterTestCount).isEqualTo(0);
   }
 
   @Test
