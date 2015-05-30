@@ -25,7 +25,7 @@ again.
 
 ## Code Style
 The Acai codebase follows the [Google Java Style](
-http://google.github.io/styleguide/javaguide.html). You can
+https://google.github.io/styleguide/javaguide.html). You can
 download formatter configurations for Eclipse and IntelliJ from the
 [google-styleguide repository](https://github.com/google/styleguide).
 
