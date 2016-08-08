@@ -133,6 +133,58 @@ multiple Acai rules in multiple different test classes within that suite.
 This allows tests of the server to be structured into test classes according to
 the functionality being tested.
 
+## Test scoped bindings
+Occasionally you may wish to have one instance of a class per test and inject
+this instance in multiple places in the object graph. In this case Guice's
+default instance scope will not do. Fortunately Acai provides a `@TestScoped`
+annotation which can be used to achieve exactly this.
+
+For example we may define a module for using Webdriver (a popular browser
+automation tool) in our tests like so:
+
+```java
+class WebdriverModule extends AbstractModule {
+  private static final Duration MAX_WAIT = Duration.standardSeconds(5);
+
+  @Override
+  protected void configure() {
+    install(new TestingServiceModule() {
+      @Override protected void configureTestingServices() {
+        bindTestingService(WebDriverQuitter.class);
+      }
+    });
+  }
+
+  @Provides
+  @TestScoped
+  WebDriver provideWebDriver() {
+    // Provide the driver here; precisely one instance will be
+    // created per test case.
+  }
+
+  @Provides
+  WebDriverWait provideWait(WebDriver webDriver) {
+    return new WebDriverWait(webDriver, MAX_WAIT.getStandardSeconds());
+  }
+
+  static class WebDriverQuitter implements TestingService {
+    @Inject Provider<WebDriver> webDriver;
+
+    @AfterTest void quitWebDriver() throws Exception {
+      // Calling get on the Provider here returns the instance
+      // for the test case which we are currently tearing down.
+      webDriver.get().quit();
+    }
+  }
+}
+```
+
+One important point to note when using `@TestScoped` bindings is that
+`TestingService` instances are instantiated once for all tests outside of test
+scope. Therefore if you wish to access `@TestScoped` bindings in a
+`@BeforeTest` or `@AfterTest` method you should inject a `Provider` and call
+`get` on it within those methods as shown in the above example.
+
 ## Services which depend upon each other
 If the services you need to start for tests must be started in a specific order
 you can express this using the `@DependsOn` annotation.
@@ -192,58 +244,6 @@ public class ExampleFrontendWebdriverTest {
 In the above example `MyFrontendRunner` is annotated
 `@DependsOn(MyBackendRunner.class)` which will cause Acai to start the
 backend server before starting the frontend.
-
-## Test scoped bindings
-Occasionally you may wish to have one instance of a class per test and inject
-this instance in multiple places in the object graph. In this case Guice's
-default instance scope will not do. Fortunately Acai provides a `@TestScoped`
-annotation which can be used to achieve exactly this.
-
-For example we may define a module for using Webdriver (a popular browser
-automation tool) in our tests like so:
-
-```java
-class WebdriverModule extends AbstractModule {
-  private static final Duration MAX_WAIT = Duration.standardSeconds(5);
-
-  @Override
-  protected void configure() {
-    install(new TestingServiceModule() {
-      @Override protected void configureTestingServices() {
-        bindTestingService(WebDriverQuitter.class);
-      }
-    });
-  }
-
-  @Provides
-  @TestScoped
-  WebDriver provideWebDriver() {
-    // Provide the driver here; precisely one instance will be
-    // created per test case.
-  }
-
-  @Provides
-  WebDriverWait provideWait(WebDriver webDriver) {
-    return new WebDriverWait(webDriver, MAX_WAIT.getStandardSeconds());
-  }
-
-  static class WebDriverQuitter implements TestingService {
-    @Inject Provider<WebDriver> webDriver;
-
-    @AfterTest void quitWebDriver() throws Exception {
-      // Calling get on the Provider here returns the instance
-      // for the test case which we are currently tearing down.
-      webDriver.get().quit();
-    }
-  }
-}
-```
-
-One important point to note when using `@TestScoped` bindings is that
-`TestingService` instances are instantiated once for all tests outside of test
-scope. Therefore if you wish to access `@TestScoped` bindings in a
-`@BeforeTest` or `@AfterTest` method you should inject a `Provider` and call
-`get` on it within those methods as shown in the above example.
 
 ## API
 As shown in the above examples Acai has a relatively small API surface.
