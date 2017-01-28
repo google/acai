@@ -16,24 +16,24 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Set;
-
-import static com.google.common.truth.Truth.assertThat;
-
 @RunWith(JUnit4.class)
 public class DependenciesTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static class ServiceA implements TestingService {}
+
   private static class ServiceB implements TestingService {}
 
   @Test
@@ -45,8 +45,12 @@ public class DependenciesTest {
   }
 
   private static class Service1 implements TestingService {}
-  @DependsOn(Service1.class) private static class Service2 implements TestingService {}
-  @DependsOn(Service2.class) private static class Service3 implements TestingService {}
+
+  @DependsOn(Service1.class)
+  private static class Service2 implements TestingService {}
+
+  @DependsOn(Service2.class)
+  private static class Service3 implements TestingService {}
 
   @Test
   public void linearOrder() {
@@ -54,7 +58,8 @@ public class DependenciesTest {
         ImmutableList.of(new Service1(), new Service2(), new Service3());
 
     assertThat(Dependencies.inOrder(ImmutableSet.copyOf(testingServices)))
-        .containsExactlyElementsIn(testingServices).inOrder();
+        .containsExactlyElementsIn(testingServices)
+        .inOrder();
   }
 
   @Test
@@ -64,10 +69,12 @@ public class DependenciesTest {
         ImmutableList.of(new Service2(), new Service3());
 
     assertThat(Dependencies.inOrder(ImmutableSet.copyOf(testingServices)))
-        .containsExactlyElementsIn(testingServices).inOrder();
+        .containsExactlyElementsIn(testingServices)
+        .inOrder();
   }
 
-  @DependsOn({ServiceA.class, ServiceB.class}) private static class Last implements TestingService {}
+  @DependsOn({ServiceA.class, ServiceB.class})
+  private static class Last implements TestingService {}
 
   @Test
   public void multipleDependencies() {
@@ -81,9 +88,14 @@ public class DependenciesTest {
     assertThat(Iterables.getLast(ordered)).isInstanceOf(Last.class);
   }
 
-  @DependsOn(C.class) private static class A implements TestingService {}
-  @DependsOn(A.class) private static class B implements TestingService {}
-  @DependsOn(B.class) private static class C implements TestingService {}
+  @DependsOn(C.class)
+  private static class A implements TestingService {}
+
+  @DependsOn(A.class)
+  private static class B implements TestingService {}
+
+  @DependsOn(B.class)
+  private static class C implements TestingService {}
 
   @Test
   public void throwsExceptionIfCyclePresent() {

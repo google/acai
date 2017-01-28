@@ -16,16 +16,13 @@
 
 package com.google.acai;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Annotates a method in a {@link TestingService} to run after each test method.
- */
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/** Annotates a method in a {@link TestingService} to run after each test method. */
 @Retention(RUNTIME)
 @Target(METHOD)
-public @interface AfterTest {
-}
+public @interface AfterTest {}

@@ -18,11 +18,11 @@ package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.base.Throwables;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
-
+import java.util.concurrent.CountDownLatch;
+import javax.inject.Inject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,10 +31,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.concurrent.CountDownLatch;
-
-import javax.inject.Inject;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestScopeTest {
@@ -90,18 +86,26 @@ public class TestScopeTest {
     final CountDownLatch testStarted = new CountDownLatch(1);
     final CountDownLatch endTest = new CountDownLatch(1);
 
-    Thread testOneThread = new Thread(() -> {
-      try {
-        new Acai(EmptyTestModule.class).apply(new Statement() {
-          @Override public void evaluate() throws Throwable {
-            testStarted.countDown();
-            endTest.await();
-          }
-        }, frameworkMethod, testOne).evaluate();
-      } catch (Throwable throwable) {
-        throw new RuntimeException(throwable);
-      }
-    });
+    Thread testOneThread =
+        new Thread(
+            () -> {
+              try {
+                new Acai(EmptyTestModule.class)
+                    .apply(
+                        new Statement() {
+                          @Override
+                          public void evaluate() throws Throwable {
+                            testStarted.countDown();
+                            endTest.await();
+                          }
+                        },
+                        frameworkMethod,
+                        testOne)
+                    .evaluate();
+              } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+              }
+            });
 
     testOneThread.start();
 
@@ -119,19 +123,22 @@ public class TestScopeTest {
   }
 
   private static class EmptyTestModule extends AbstractModule {
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       // No-op.
     }
   }
 
   private static class InvalidTestModule extends TestingServiceModule {
-    @Override protected void configureTestingServices() {
+    @Override
+    protected void configureTestingServices() {
       bindTestingService(InvalidTestingService.class);
     }
   }
 
   private static class ValidTestModule extends TestingServiceModule {
-    @Override protected void configureTestingServices() {
+    @Override
+    protected void configureTestingServices() {
       bindTestingService(ValidTestingService.class);
     }
   }
@@ -142,8 +149,7 @@ public class TestScopeTest {
   }
 
   @TestScoped
-  private static class MyTestScopedClass {
-  }
+  private static class MyTestScopedClass {}
 
   private static class InvalidTestingService implements TestingService {
     @Inject MyTestScopedClass testScoped;
@@ -154,11 +160,13 @@ public class TestScopeTest {
     static MyTestScopedClass valueFromBeforeTest;
     static MyTestScopedClass valueFromAfterTest;
 
-    @BeforeTest void beforeTest() {
+    @BeforeTest
+    void beforeTest() {
       valueFromBeforeTest = testScoped.get();
     }
 
-    @AfterTest void afterTest() {
+    @AfterTest
+    void afterTest() {
       valueFromAfterTest = testScoped.get();
     }
   }

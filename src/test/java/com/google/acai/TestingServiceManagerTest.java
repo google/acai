@@ -16,14 +16,14 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.hamcrest.Matchers.isA;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.Matchers.isA;
 
 @RunWith(JUnit4.class)
 public class TestingServiceManagerTest {
@@ -82,7 +82,7 @@ public class TestingServiceManagerTest {
 
   @Test
   public void methodsFoundThroughSubclass() {
-    MyTestingService testingService = new MyTestingService() { };
+    MyTestingService testingService = new MyTestingService() {};
 
     new TestingServiceManager(testingService).beforeTest();
 
@@ -94,21 +94,27 @@ public class TestingServiceManagerTest {
   @Test
   public void runtimeExceptionsPropagated() {
     thrown.expect(TestRuntimeException.class);
-    new TestingServiceManager(new TestingService() {
-      @BeforeTest void beforeTest() {
-        throw new TestRuntimeException();
-      }
-    }).beforeTest();
+    new TestingServiceManager(
+            new TestingService() {
+              @BeforeTest
+              void beforeTest() {
+                throw new TestRuntimeException();
+              }
+            })
+        .beforeTest();
   }
 
   @Test
   public void checkedExceptionsPropagatedInsideRuntimeException() {
     thrown.expectCause(isA(TestException.class));
-    new TestingServiceManager(new TestingService() {
-      @BeforeTest void beforeTest() throws TestException {
-        throw new TestException();
-      }
-    }).beforeTest();
+    new TestingServiceManager(
+            new TestingService() {
+              @BeforeTest
+              void beforeTest() throws TestException {
+                throw new TestException();
+              }
+            })
+        .beforeTest();
   }
 
   @Test
@@ -117,9 +123,9 @@ public class TestingServiceManagerTest {
     assertThat(ServiceWithStaticMethod.staticBeforeSuiteMethodInvoked).isFalse();
   }
 
-  private static class TestRuntimeException extends RuntimeException { }
+  private static class TestRuntimeException extends RuntimeException {}
 
-  private static class TestException extends Exception { }
+  private static class TestException extends Exception {}
 
   private static class MyTestingService implements TestingService {
     int beforeSuiteCount = 0;
@@ -128,29 +134,35 @@ public class TestingServiceManagerTest {
     int privateBeforeTestCount = 0;
     int beforeTestWithParameterCount = 0;
 
-    @BeforeSuite public void incrementBeforeSuiteCount() {
+    @BeforeSuite
+    public void incrementBeforeSuiteCount() {
       beforeSuiteCount++;
     }
 
-    @BeforeTest public void incrementBeforeTestCount() {
+    @BeforeTest
+    public void incrementBeforeTestCount() {
       beforeTestCount++;
     }
 
-    @BeforeTest private void incrementPrivateBeforeTestCount() {
+    @BeforeTest
+    private void incrementPrivateBeforeTestCount() {
       privateBeforeTestCount++;
     }
 
-    @BeforeTest private void incrementBeforeTestWithParameterCount(int someParameter) {
+    @BeforeTest
+    private void incrementBeforeTestWithParameterCount(int someParameter) {
       beforeTestWithParameterCount++;
     }
 
-    @AfterTest public void incrementAfterTestCount() {
+    @AfterTest
+    public void incrementAfterTestCount() {
       afterTestCount++;
     }
   }
 
   private static class ServiceWithStaticMethod implements TestingService {
     static boolean staticBeforeSuiteMethodInvoked = false;
+
     @BeforeSuite
     static void willNotBeInvoked() {
       staticBeforeSuiteMethodInvoked = true;

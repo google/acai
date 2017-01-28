@@ -16,16 +16,15 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Set;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(JUnit4.class)
 public class TestingServiceModuleTest {
@@ -33,27 +32,32 @@ public class TestingServiceModuleTest {
   @Test
   public void servicesAreBound() {
     final ServiceToBindByInstance serviceInstance = new ServiceToBindByInstance();
-    Injector injector = Guice.createInjector(new TestingServiceModule() {
-      @Override protected void configureTestingServices() {
-        bindTestingService(ServiceToBindByClass.class);
-        bindTestingService(serviceInstance);
-      }
-    });
+    Injector injector =
+        Guice.createInjector(
+            new TestingServiceModule() {
+              @Override
+              protected void configureTestingServices() {
+                bindTestingService(ServiceToBindByClass.class);
+                bindTestingService(serviceInstance);
+              }
+            });
 
-    Set<TestingService> boundServices = injector.getInstance(
-        new Key<Set<TestingService>>(AcaiInternal.class) { });
+    Set<TestingService> boundServices =
+        injector.getInstance(new Key<Set<TestingService>>(AcaiInternal.class) {});
 
     assertThat(boundServices).containsExactly(serviceInstance, new ServiceToBindByClass());
   }
 
   private static class ServiceToBindByClass implements TestingService {
-    @Override public boolean equals(Object obj) {
+    @Override
+    public boolean equals(Object obj) {
       return obj.getClass() == ServiceToBindByClass.class;
     }
   }
 
   private static class ServiceToBindByInstance implements TestingService {
-    @Override public boolean equals(Object obj) {
+    @Override
+    public boolean equals(Object obj) {
       return obj == this;
     }
   }

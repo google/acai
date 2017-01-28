@@ -16,16 +16,12 @@
 
 package com.google.acai;
 
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.Retention;
-
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Annotates bindings which are internal to Acai.
- */
+import com.google.inject.BindingAnnotation;
+import java.lang.annotation.Retention;
+
+/** Annotates bindings which are internal to Acai. */
 @Retention(RUNTIME)
 @BindingAnnotation
-@interface AcaiInternal {
-}
+@interface AcaiInternal {}

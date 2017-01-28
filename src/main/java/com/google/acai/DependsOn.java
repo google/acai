@@ -16,25 +16,23 @@
 
 package com.google.acai;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 /**
- * Annotates a {@link com.google.acai.TestingService} as depending on another
- * testing service.
+ * Annotates a {@link com.google.acai.TestingService} as depending on another testing service.
  *
- * <p>A testing service annotated as depending on another its methods will be executed
- * after the methods of the service it depends upon when executing
- * {@code BeforeSuite} or {@code BeforeTest} methods. When running {@code AfterTest}
- * methods the dependent service's methods will be run before those of the
- * service it depends upon (i.e., the setup ordering is the opposite of the setup
- * ordering).
+ * <p>A testing service annotated as depending on another its methods will be executed after the
+ * methods of the service it depends upon when executing {@code BeforeSuite} or {@code BeforeTest}
+ * methods. When running {@code AfterTest} methods the dependent service's methods will be run
+ * before those of the service it depends upon (i.e., the setup ordering is the opposite of the
+ * setup ordering).
  *
- * <p>This is useful in the case where your test environment starts multiple
- * services which depend on each other being available in order to start.
+ * <p>This is useful in the case where your test environment starts multiple services which depend
+ * on each other being available in order to start.
  */
 @Retention(RUNTIME)
 @Target(TYPE)

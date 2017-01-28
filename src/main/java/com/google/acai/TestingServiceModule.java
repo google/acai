@@ -23,6 +23,7 @@ import com.google.inject.multibindings.Multibinder;
  * Abstract module which can be used to bind instances of {@link TestingService}.
  *
  * <p>Example usage:
+ *
  * <pre>
  *   class MyModule extends AbstractModule {
  *     {@literal @}Override protected void configure() {
@@ -37,32 +38,36 @@ import com.google.inject.multibindings.Multibinder;
  */
 public abstract class TestingServiceModule extends AbstractModule {
 
-  @Override final protected void configure() {
+  @Override
+  protected final void configure() {
     configureTestingServices();
   }
 
   protected final void bindTestingService(TestingService testingService) {
     Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class)
-        .addBinding().toInstance(testingService);
+        .addBinding()
+        .toInstance(testingService);
   }
 
   protected final void bindTestingService(Class<? extends TestingService> testingService) {
     Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class)
-        .addBinding().to(testingService);
+        .addBinding()
+        .to(testingService);
   }
 
   /**
-   * Implementing classes should override this method and call
-   * {@link #bindTestingService(TestingService)} from within it.
+   * Implementing classes should override this method and call {@link
+   * #bindTestingService(TestingService)} from within it.
    */
   protected abstract void configureTestingServices();
 
   /**
-   * Noop module used to ensure mutlibinding exists even in the case where
-   * no {@code TestingService} instances are configured.
+   * Noop module used to ensure mutlibinding exists even in the case where no {@code TestingService}
+   * instances are configured.
    */
   static class NoopTestingServiceModule extends AbstractModule {
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class);
     }
   }
