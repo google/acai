@@ -19,15 +19,16 @@ package com.google.acai;
 /**
  * Marker interface for testing services to be used with {@link Acai}.
  *
- * <p>Implementing classes should add zero argument methods annotated with
- * one of {@link BeforeSuite}, {@link BeforeTest} or {@link AfterTest} to have them
- * run by Acai at the relevant time during test suite execution.
+ * <p>Implementing classes should add zero argument methods annotated with one of {@link
+ * BeforeSuite}, {@link BeforeTest} or {@link AfterTest} to have them run by Acai at the relevant
+ * time during test suite execution.
  *
- * <p>Multiple {@code TestingService} instances can be bound in a single
- * {@link TestingServiceModule} and each {@code TestingService} may contain multiple
- * or no methods with each annotation type.
+ * <p>Multiple {@code TestingService} instances can be bound in a single {@link
+ * TestingServiceModule} and each {@code TestingService} may contain multiple or no methods with
+ * each annotation type.
  *
  * <p>Example usage:
+ *
  * <pre>
  *   class MyTestingService implements TestingService {
  *     {@literal @}BeforeSuite
@@ -43,5 +44,4 @@ package com.google.acai;
  *
  * </pre>
  */
-public interface TestingService {
-}
+public interface TestingService {}

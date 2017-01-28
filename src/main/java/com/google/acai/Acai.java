@@ -16,20 +16,17 @@
 
 package com.google.acai;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.acai.TestScope.TestScopeModule;
 import com.google.acai.TestingServiceModule.NoopTestingServiceModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -37,14 +34,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.junit.rules.MethodRule;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.Statement;
 
 /**
  * Acai rule for integrating Guice with a JUnit4 test.
  *
  * <p>Use to inject a test with a module:
+ *
  * <pre>
  *   public class MyTest {
  *     {@literal @}Rule Acai acai = new Acai(MyModule.class);
@@ -58,8 +56,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *   }
  * </pre>
  *
- * <p>To configure services to run before or between tests see {@link TestingService} and
- * {@link TestingServiceModule}.
+ * <p>To configure services to run before or between tests see {@link TestingService} and {@link
+ * TestingServiceModule}.
  *
  * <p>See the {@code README.md} file for detailed usage examples.
  */
@@ -75,10 +73,11 @@ public class Acai implements MethodRule {
   }
 
   @Override
-  public Statement apply(final Statement statement, FrameworkMethod frameworkMethod,
-      final Object target) {
+  public Statement apply(
+      final Statement statement, FrameworkMethod frameworkMethod, final Object target) {
     return new Statement() {
-      @Override public void evaluate() throws Throwable {
+      @Override
+      public void evaluate() throws Throwable {
         TestEnvironment testEnvironment = getOrCreateTestEnvironment(module);
         testEnvironment.beforeSuiteIfNotAlreadyRun();
         testEnvironment.enterTestScope();
@@ -98,21 +97,23 @@ public class Acai implements MethodRule {
   }
 
   /**
-   * Returns the {@code TestEnvironment} for the module, creating it if this
-   * is the first time it has been requested.
+   * Returns the {@code TestEnvironment} for the module, creating it if this is the first time it
+   * has been requested.
    */
   private static TestEnvironment getOrCreateTestEnvironment(Class<? extends Module> module) {
     if (environments.containsKey(module)) {
       return environments.get(module);
     }
-    Injector injector = Guice.createInjector(
-        instantiateModule(module), new NoopTestingServiceModule(), new TestScopeModule());
-    TestEnvironment testEnvironment = new TestEnvironment(
-        injector,
-        Dependencies.inOrder(injector.getInstance(TESTING_SERVICES_KEY))
-            .stream()
-            .map(TestingServiceManager::new)
-            .collect(Collectors.toList()));
+    Injector injector =
+        Guice.createInjector(
+            instantiateModule(module), new NoopTestingServiceModule(), new TestScopeModule());
+    TestEnvironment testEnvironment =
+        new TestEnvironment(
+            injector,
+            Dependencies.inOrder(injector.getInstance(TESTING_SERVICES_KEY))
+                .stream()
+                .map(TestingServiceManager::new)
+                .collect(Collectors.toList()));
     environments.put(module, testEnvironment);
     return testEnvironment;
   }
@@ -146,13 +147,14 @@ public class Acai implements MethodRule {
    *
    * <p>For use in unit tests of Acai itself.
    */
-  @VisibleForTesting static void testOnlyResetEnvironments() {
+  @VisibleForTesting
+  static void testOnlyResetEnvironments() {
     environments.clear();
   }
 
   /**
-   * A TestEnvironment represents a configuration for running tests derived
-   * from a single Guice module.
+   * A TestEnvironment represents a configuration for running tests derived from a single Guice
+   * module.
    */
   private static class TestEnvironment {
     private final Injector injector;
@@ -161,8 +163,8 @@ public class Acai implements MethodRule {
     private final TestScope testScope;
 
     /**
-     * Initializes a newly created {@code TestEnvironment} with an {@code injector} and
-     * a list of {@code testingServices} in the order they will be executed.
+     * Initializes a newly created {@code TestEnvironment} with an {@code injector} and a list of
+     * {@code testingServices} in the order they will be executed.
      */
     TestEnvironment(Injector injector, Iterable<TestingServiceManager> testingServices) {
       this.injector = checkNotNull(injector);

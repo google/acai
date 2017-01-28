@@ -16,23 +16,20 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
+import java.lang.annotation.Retention;
+import javax.inject.Inject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import javax.inject.Inject;
-import java.lang.annotation.Retention;
-
-import static com.google.common.truth.Truth.assertThat;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-/**
- * Functional test which uses Acai as clients do from a JUnit rule.
- */
+/** Functional test which uses Acai as clients do from a JUnit rule. */
 @RunWith(JUnit4.class)
 public class AcaiFunctionalTest {
   @Rule public Acai acai = new Acai(TestModule.class);
@@ -54,13 +51,16 @@ public class AcaiFunctionalTest {
   }
 
   private static class TestModule extends AbstractModule {
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       bindConstant().annotatedWith(TestBindingAnnotation.class).to("injected-value");
-      install(new TestingServiceModule() {
-        @Override protected void configureTestingServices() {
-          bindTestingService(Service.class);
-        }
-      });
+      install(
+          new TestingServiceModule() {
+            @Override
+            protected void configureTestingServices() {
+              bindTestingService(Service.class);
+            }
+          });
     }
   }
 
@@ -69,21 +69,23 @@ public class AcaiFunctionalTest {
     static int beforeTestCount = 0;
     static int afterTestCount = 0;
 
-    @BeforeSuite public void incrementBeforeSuiteCount() {
+    @BeforeSuite
+    public void incrementBeforeSuiteCount() {
       beforeSuiteCount++;
     }
 
-    @BeforeTest public void incrementBeforeTestCount() {
+    @BeforeTest
+    public void incrementBeforeTestCount() {
       beforeTestCount++;
     }
 
-    @AfterTest public void incrementAfterTestCount() {
+    @AfterTest
+    public void incrementAfterTestCount() {
       afterTestCount++;
     }
   }
 
   @Retention(RUNTIME)
   @BindingAnnotation
-  private @interface TestBindingAnnotation {
-  }
+  private @interface TestBindingAnnotation {}
 }

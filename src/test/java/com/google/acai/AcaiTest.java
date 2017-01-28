@@ -16,11 +16,20 @@
 
 package com.google.acai;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assert_;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,16 +39,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.lang.annotation.Retention;
-
-import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assert_;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
@@ -62,11 +61,16 @@ public class AcaiTest {
 
     assertThat(Service.methodCalls).isEqualTo(MethodCalls.create());
 
-    acai.apply(new Statement() {
-      @Override public void evaluate() throws Throwable {
-        assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 0));
-      }
-    }, frameworkMethod, new Object()).evaluate();
+    acai.apply(
+            new Statement() {
+              @Override
+              public void evaluate() throws Throwable {
+                assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 0));
+              }
+            },
+            frameworkMethod,
+            new Object())
+        .evaluate();
 
     assertThat(Service.methodCalls).isEqualTo(MethodCalls.create(1, 1, 1));
   }
@@ -132,7 +136,8 @@ public class AcaiTest {
   @Test
   public void servicesRunInDependencyOrder() throws Throwable {
     new Acai(DependentServiceModule.class)
-        .apply(statement, frameworkMethod, new Object()).evaluate();
+        .apply(statement, frameworkMethod, new Object())
+        .evaluate();
 
     // Sanity check the services ran, the ordering assertions are
     // within DependentService itself.
@@ -141,46 +146,58 @@ public class AcaiTest {
   }
 
   @Test
-     public void usefulErrorMessageWhenModuleMissingZeroArgConstructor() throws Throwable {
+  public void usefulErrorMessageWhenModuleMissingZeroArgConstructor() throws Throwable {
     thrown.expectMessage("does not have zero argument constructor");
     new Acai(ModuleWithoutZeroArgumentConstructor.class)
-        .apply(statement, frameworkMethod, new Object()).evaluate();
+        .apply(statement, frameworkMethod, new Object())
+        .evaluate();
   }
 
   @Test
   public void rethrowsExceptionThrownByModuleConstructor() throws Throwable {
     thrown.expect(TestException.class);
     new Acai(ModuleWithThrowingConstructor.class)
-        .apply(statement, frameworkMethod, new Object()).evaluate();
+        .apply(statement, frameworkMethod, new Object())
+        .evaluate();
   }
 
   private static class TestModule extends AbstractModule {
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       bindConstant().annotatedWith(TestBindingAnnotation.class).to("injected-value");
       bind(Service.class).in(Singleton.class);
-      install(new TestingServiceModule() {
-        @Override protected void configureTestingServices() {
-          bindTestingService(Service.class);
-        }
-      });
+      install(
+          new TestingServiceModule() {
+            @Override
+            protected void configureTestingServices() {
+              bindTestingService(Service.class);
+            }
+          });
     }
 
-    @Provides @IsInitialized boolean provideIsInitialized(Service service) {
+    @Provides
+    @IsInitialized
+    boolean provideIsInitialized(Service service) {
       return service.initialized;
     }
   }
 
   private static class DependentServiceModule extends AbstractModule {
-    @Override protected void configure() {
-      install(new TestingServiceModule() {
-        @Override protected void configureTestingServices() {
-          bindTestingService(DependentService.class);
-          bindTestingService(Service.class);
-        }
-      });
+    @Override
+    protected void configure() {
+      install(
+          new TestingServiceModule() {
+            @Override
+            protected void configureTestingServices() {
+              bindTestingService(DependentService.class);
+              bindTestingService(Service.class);
+            }
+          });
     }
 
-    @Provides @IsInitialized boolean provideIsInitialized(Service service) {
+    @Provides
+    @IsInitialized
+    boolean provideIsInitialized(Service service) {
       return service.initialized;
     }
   }
@@ -189,16 +206,19 @@ public class AcaiTest {
     static MethodCalls methodCalls = MethodCalls.create();
     boolean initialized = false;
 
-    @BeforeSuite private void beforeSuite() {
+    @BeforeSuite
+    private void beforeSuite() {
       initialized = true;
       methodCalls = methodCalls.incrementBeforeSuite();
     }
 
-    @BeforeTest private void beforeTest() {
+    @BeforeTest
+    private void beforeTest() {
       methodCalls = methodCalls.incrementBeforeTest();
     }
 
-    @AfterTest private void afterTest() {
+    @AfterTest
+    private void afterTest() {
       methodCalls = methodCalls.incrementAfterTest();
     }
   }
@@ -207,29 +227,40 @@ public class AcaiTest {
   private static class DependentService implements TestingService {
     static MethodCalls methodCalls = MethodCalls.create();
 
-    @BeforeSuite private void beforeSuite() {
-      assert_().withFailureMessage("DependentService should be run after Service")
-          .that(Service.methodCalls.beforeSuite()).isEqualTo(methodCalls.beforeSuite() + 1);
+    @BeforeSuite
+    private void beforeSuite() {
+      assert_()
+          .withFailureMessage("DependentService should be run after Service")
+          .that(Service.methodCalls.beforeSuite())
+          .isEqualTo(methodCalls.beforeSuite() + 1);
       methodCalls = methodCalls.incrementBeforeSuite();
     }
 
-    @BeforeTest private void beforeTest() {
-      assert_().withFailureMessage("DependentService should be run after Service")
-        .that(Service.methodCalls.beforeTest()).isEqualTo(methodCalls.beforeTest() + 1);
+    @BeforeTest
+    private void beforeTest() {
+      assert_()
+          .withFailureMessage("DependentService should be run after Service")
+          .that(Service.methodCalls.beforeTest())
+          .isEqualTo(methodCalls.beforeTest() + 1);
       methodCalls = methodCalls.incrementBeforeTest();
     }
 
-    @AfterTest private void afterTest() {
+    @AfterTest
+    private void afterTest() {
       methodCalls = methodCalls.incrementAfterTest();
-      assert_().withFailureMessage("Service should be cleaned up after DependentService")
-          .that(Service.methodCalls.afterTest()).isEqualTo(methodCalls.afterTest() - 1);
+      assert_()
+          .withFailureMessage("Service should be cleaned up after DependentService")
+          .that(Service.methodCalls.afterTest())
+          .isEqualTo(methodCalls.afterTest() - 1);
     }
   }
 
   @AutoValue
-  static abstract class MethodCalls {
+  abstract static class MethodCalls {
     abstract int beforeSuite();
+
     abstract int beforeTest();
+
     abstract int afterTest();
 
     static MethodCalls create() {
@@ -262,11 +293,13 @@ public class AcaiTest {
     @Inject @IsInitialized boolean initialized;
   }
 
-  private static class TestException extends RuntimeException { }
+  private static class TestException extends RuntimeException {}
 
   private static class ServiceWithFailingBeforeTest implements TestingService {
     static boolean shouldFail = true;
-    @BeforeTest void failingBeforeTest() {
+
+    @BeforeTest
+    void failingBeforeTest() {
       if (shouldFail) {
         throw new TestException();
       }
@@ -274,7 +307,8 @@ public class AcaiTest {
   }
 
   private static class FailingBeforeTestModule extends TestingServiceModule {
-    @Override protected void configureTestingServices() {
+    @Override
+    protected void configureTestingServices() {
       install(new TestModule());
       bindTestingService(ServiceWithFailingBeforeTest.class);
     }
@@ -285,7 +319,8 @@ public class AcaiTest {
       // No-op.
     }
 
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       // No-op.
     }
   }
@@ -295,18 +330,17 @@ public class AcaiTest {
       throw new TestException();
     }
 
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       // No-op.
     }
   }
 
   @Retention(RUNTIME)
   @BindingAnnotation
-  private @interface TestBindingAnnotation {
-  }
+  private @interface TestBindingAnnotation {}
 
   @Retention(RUNTIME)
   @BindingAnnotation
-  private @interface IsInitialized {
-  }
+  private @interface IsInitialized {}
 }

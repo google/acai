@@ -16,20 +16,17 @@
 
 package com.google.acai;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkState;
-
-/**
- * Scope for bindings annotated with {@link TestScoped}.
- */
+/** Scope for bindings annotated with {@link TestScoped}. */
 class TestScope implements Scope {
   private final ThreadLocal<Map<Key<?>, Object>> values = new ThreadLocal<>();
 
@@ -43,7 +40,8 @@ class TestScope implements Scope {
     values.remove();
   }
 
-  @Override public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscopedProvider) {
+  @Override
+  public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscopedProvider) {
     return () -> {
       Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);
 
@@ -66,7 +64,8 @@ class TestScope implements Scope {
   }
 
   static class TestScopeModule extends AbstractModule {
-    @Override protected void configure() {
+    @Override
+    protected void configure() {
       TestScope testScope = new TestScope();
       bind(TestScope.class).annotatedWith(AcaiInternal.class).toInstance(testScope);
       bindScope(TestScoped.class, testScope);
