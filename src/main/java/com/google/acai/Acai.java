@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -64,6 +65,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Acai implements MethodRule {
   private static final Map<Class<? extends Module>, TestEnvironment> environments = new HashMap<>();
+  private static final Key<Set<TestingService>> TESTING_SERVICES_KEY =
+      new Key<Set<TestingService>>(AcaiInternal.class) {};
+
   private final Class<? extends Module> module;
 
   public Acai(Class<? extends Module> module) {
@@ -103,11 +107,12 @@ public class Acai implements MethodRule {
     }
     Injector injector = Guice.createInjector(
         instantiateModule(module), new NoopTestingServiceModule(), new TestScopeModule());
-    TestEnvironment testEnvironment = new TestEnvironment(injector,
-        Iterables.transform(
-            Dependencies.inOrder(
-                injector.getInstance(new Key<Set<TestingService>>(AcaiInternal.class) {})),
-            TestingServiceManager.createFunction()));
+    TestEnvironment testEnvironment = new TestEnvironment(
+        injector,
+        Dependencies.inOrder(injector.getInstance(TESTING_SERVICES_KEY))
+            .stream()
+            .map(TestingServiceManager::new)
+            .collect(Collectors.toList()));
     environments.put(module, testEnvironment);
     return testEnvironment;
   }
@@ -126,9 +131,13 @@ public class Acai implements MethodRule {
       throw new RuntimeException(
           "Module provided by user does not have zero argument constructor.", e);
     } catch (InvocationTargetException e) {
-      throw Throwables.propagate(firstNonNull(e.getCause(), e));
+      if (e.getCause() != null) {
+        Throwables.throwIfUnchecked(e.getCause());
+        throw new RuntimeException(e.getCause());
+      }
+      throw new RuntimeException(e);
     } catch (InstantiationException | IllegalAccessException e) {
-      throw Throwables.propagate(e);
+      throw new RuntimeException(e);
     }
   }
 

@@ -60,27 +60,19 @@ class TestingServiceManager {
     invokeMethodsAnnotated(AfterTest.class);
   }
 
-  /**
-   * Returns a function which creates {@code TestServiceManager} instances
-   * from {@code TestingService} instances.
-   */
-  static Function<TestingService, TestingServiceManager> createFunction() {
-    return new Function<TestingService, TestingServiceManager>() {
-      @Override public TestingServiceManager apply(TestingService testingService) {
-        return new TestingServiceManager(testingService);
-      }
-    };
-  }
-
   private void invokeMethodsAnnotated(Class<? extends Annotation> annotation) {
     for (Method method : methodsAnnotated(annotation)) {
       try {
         method.setAccessible(true);
         method.invoke(testingService);
       } catch (InvocationTargetException e) {
-        Throwables.propagate(firstNonNull(e.getCause(), e));
+        if (e.getCause() != null) {
+          Throwables.throwIfUnchecked(e.getCause());
+          throw new RuntimeException(e.getCause());
+        }
+        throw new RuntimeException(e);
       } catch (IllegalAccessException e) {
-        Throwables.propagate(e);
+        throw new RuntimeException(e);
       }
     }
   }
