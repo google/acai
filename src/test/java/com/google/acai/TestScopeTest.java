@@ -90,18 +90,16 @@ public class TestScopeTest {
     final CountDownLatch testStarted = new CountDownLatch(1);
     final CountDownLatch endTest = new CountDownLatch(1);
 
-    Thread testOneThread = new Thread(new Runnable() {
-      @Override public void run() {
-        try {
-          new Acai(EmptyTestModule.class).apply(new Statement() {
-            @Override public void evaluate() throws Throwable {
-              testStarted.countDown();
-              endTest.await();
-            }
-          }, frameworkMethod, testOne).evaluate();
-        } catch (Throwable throwable) {
-          throw Throwables.propagate(throwable);
-        }
+    Thread testOneThread = new Thread(() -> {
+      try {
+        new Acai(EmptyTestModule.class).apply(new Statement() {
+          @Override public void evaluate() throws Throwable {
+            testStarted.countDown();
+            endTest.await();
+          }
+        }, frameworkMethod, testOne).evaluate();
+      } catch (Throwable throwable) {
+        throw new RuntimeException(throwable);
       }
     });
 

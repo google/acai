@@ -35,7 +35,7 @@ class TestScope implements Scope {
 
   void enter() {
     checkState(values.get() == null, "TestScope is already in progress.");
-    values.set(new HashMap<Key<?>, Object>());
+    values.set(new HashMap<>());
   }
 
   void exit() {
@@ -44,18 +44,16 @@ class TestScope implements Scope {
   }
 
   @Override public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscopedProvider) {
-    return new Provider<T>() {
-      @Override public T get() {
-        Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);
+    return () -> {
+      Map<Key<?>, Object> scopedObjects = getScopedObjectMap(key);
 
-        @SuppressWarnings("unchecked")
-        T scopedObject = (T) scopedObjects.get(key);
-        if (scopedObject == null && !scopedObjects.containsKey(key)) {
-          scopedObject = unscopedProvider.get();
-          scopedObjects.put(key, scopedObject);
-        }
-        return scopedObject;
+      @SuppressWarnings("unchecked")
+      T scopedObject = (T) scopedObjects.get(key);
+      if (scopedObject == null && !scopedObjects.containsKey(key)) {
+        scopedObject = unscopedProvider.get();
+        scopedObjects.put(key, scopedObject);
       }
+      return scopedObject;
     };
   }
 
