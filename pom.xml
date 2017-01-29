@@ -19,7 +19,7 @@
 
   <groupId>com.google.acai</groupId>
   <artifactId>acai</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <name>Acai</name>
   <description>Testing library for JUnit4 and Guice.</description>
