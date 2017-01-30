@@ -35,7 +35,7 @@ your dependencies in `pom.xml`:
 <dependency>
   <groupId>com.google.acai</groupId>
   <artifactId>acai</artifactId>
-  <version>0.1</version>
+  <version>1.0</version>
   <scope>test</scope>
 </dependency>
 ```
