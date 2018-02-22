@@ -44,12 +44,13 @@ class GuiceberryCompatibilityModule extends AbstractModule {
       // TestScoped not on classpath, compatibility not required.
     }
 
-    install(new TestingServiceModule() {
-      @Override
-      protected void configureTestingServices() {
-        bindTestingService(GuiceBerryEnvMainService.class);
-      }
-    });
+    install(
+        new TestingServiceModule() {
+          @Override
+          protected void configureTestingServices() {
+            bindTestingService(GuiceBerryEnvMainService.class);
+          }
+        });
   }
 
   /** Service which runs any configured GuiceBerryEnvMain before all tests. */

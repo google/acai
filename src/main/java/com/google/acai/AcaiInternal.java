@@ -21,9 +21,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import javax.inject.Qualifier;
 
-/**
- * Annotates bindings which are internal to Acai.
- */
+/** Annotates bindings which are internal to Acai. */
 @Retention(RUNTIME)
 @Qualifier
 @interface AcaiInternal {}

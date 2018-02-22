@@ -83,9 +83,7 @@ public abstract class TestingServiceModule extends AbstractModule {
    */
   protected abstract void configureTestingServices();
 
-  /**
-   * Testing service which enables support for Guava's {@link TearDownAccepter}.
-   */
+  /** Testing service which enables support for Guava's {@link TearDownAccepter}. */
   static class TearDownAccepterModule extends TestingServiceModule {
     @Override
     protected void configureTestingServices() {
