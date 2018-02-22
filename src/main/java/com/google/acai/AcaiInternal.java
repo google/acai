@@ -18,10 +18,12 @@ package com.google.acai;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import com.google.inject.BindingAnnotation;
 import java.lang.annotation.Retention;
+import javax.inject.Qualifier;
 
-/** Annotates bindings which are internal to Acai. */
+/**
+ * Annotates bindings which are internal to Acai.
+ */
 @Retention(RUNTIME)
-@BindingAnnotation
+@Qualifier
 @interface AcaiInternal {}

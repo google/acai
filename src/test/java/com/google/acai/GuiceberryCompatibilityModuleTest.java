@@ -18,10 +18,11 @@ package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.guiceberry.GuiceBerryEnvMain;
+import com.google.guiceberry.GuiceBerryModule;
+import com.google.inject.AbstractModule;
 import javax.inject.Inject;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -60,6 +61,20 @@ public class GuiceberryCompatibilityModuleTest {
     assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
   }
 
+  @Test
+  public void envMainIsRunOnce() throws Throwable {
+    FakeTestClass test = new FakeTestClass();
+
+    new Acai(GuiceberryTestModule.class)
+        .apply(statement, frameworkMethod, test)
+        .evaluate();
+    new Acai(GuiceberryTestModule.class)
+        .apply(statement, frameworkMethod, test)
+        .evaluate();
+
+    assertThat(EnvMain.runCount).isEqualTo(1);
+  }
+
   private static class FakeTestClass {
     @Inject MyTestScopedClass instanceOne;
     @Inject MyTestScopedClass instanceTwo;
@@ -67,4 +82,21 @@ public class GuiceberryCompatibilityModuleTest {
 
   @com.google.guiceberry.TestScoped
   private static class MyTestScopedClass {}
+
+  static class GuiceberryTestModule extends AbstractModule {
+    @Override
+    protected void configure() {
+      install(new GuiceBerryModule());
+      install(new GuiceberryCompatibilityModule());
+      bind(GuiceBerryEnvMain.class).to(EnvMain.class);
+    }
+  }
+
+  private static class EnvMain implements GuiceBerryEnvMain {
+    static int runCount = 0;
+    @Override
+    public void run() {
+      runCount++;
+    }
+  }
 }

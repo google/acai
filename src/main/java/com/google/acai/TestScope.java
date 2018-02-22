@@ -28,6 +28,7 @@ import java.util.Map;
 
 /** Scope for bindings annotated with {@link TestScoped}. */
 class TestScope implements Scope {
+  static final TestScope INSTANCE = new TestScope();
   private final ThreadLocal<Map<Key<?>, Object>> values = new ThreadLocal<>();
 
   void enter() {
@@ -66,9 +67,8 @@ class TestScope implements Scope {
   static class TestScopeModule extends AbstractModule {
     @Override
     protected void configure() {
-      TestScope testScope = new TestScope();
-      bind(TestScope.class).annotatedWith(AcaiInternal.class).toInstance(testScope);
-      bindScope(TestScoped.class, testScope);
+      bind(TestScope.class).annotatedWith(AcaiInternal.class).toInstance(INSTANCE);
+      bindScope(TestScoped.class, INSTANCE);
     }
   }
 }
