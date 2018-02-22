@@ -65,12 +65,8 @@ public class GuiceberryCompatibilityModuleTest {
   public void envMainIsRunOnce() throws Throwable {
     FakeTestClass test = new FakeTestClass();
 
-    new Acai(GuiceberryTestModule.class)
-        .apply(statement, frameworkMethod, test)
-        .evaluate();
-    new Acai(GuiceberryTestModule.class)
-        .apply(statement, frameworkMethod, test)
-        .evaluate();
+    new Acai(GuiceberryTestModule.class).apply(statement, frameworkMethod, test).evaluate();
+    new Acai(GuiceberryTestModule.class).apply(statement, frameworkMethod, test).evaluate();
 
     assertThat(EnvMain.runCount).isEqualTo(1);
   }
@@ -94,6 +90,7 @@ public class GuiceberryCompatibilityModuleTest {
 
   private static class EnvMain implements GuiceBerryEnvMain {
     static int runCount = 0;
+
     @Override
     public void run() {
       runCount++;

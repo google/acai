@@ -168,14 +168,15 @@ public class AcaiTest {
     Acai acai = new Acai(ModuleUsingTearDownAccepter.class);
 
     acai.apply(
-        new Statement() {
-          @Override
-          public void evaluate() {
-            assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(0);
-
-          }
-        },
-        frameworkMethod, test).evaluate();
+            new Statement() {
+              @Override
+              public void evaluate() {
+                assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(0);
+              }
+            },
+            frameworkMethod,
+            test)
+        .evaluate();
 
     assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(1);
   }
