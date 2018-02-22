@@ -17,37 +17,66 @@
 package com.google.acai;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Provider;
-import com.google.inject.Scope;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 
 /**
- * Module which can be installed to provide some limited compatibility with Guiceberry.
+ * Module which provides some limited compatibility with Guiceberry.
  *
- * <p>Currently installing this module will allow you to reuse modules designed for Guiceberry which
- * make use of its @TestScoped annotation.
+ * <p>Allows some modules which were designed for Guiceberry to be reused with Acai. Currently
+ * supports Guiceberry's TestScoped annotation and GuiceBerryEnvMain.
  */
-public class GuiceberryCompatibilityModule extends AbstractModule {
+class GuiceberryCompatibilityModule extends AbstractModule {
   private static final String GUICEBRRY_TEST_SCOPED_ANNOTATION = "com.google.guiceberry.TestScoped";
+  private static final String GUICEBRRY_ENV_MAIN = "com.google.guiceberry.GuiceBerryEnvMain";
+  private static final String ENV_MAIN_RUN_METHOD = "run";
 
   @Override
   protected void configure() {
-    Provider<TestScope> scopeProvider = getProvider(Key.get(TestScope.class, AcaiInternal.class));
-    Scope scope =
-        new Scope() {
-          @Override
-          public <T> Provider<T> scope(Key<T> key, Provider<T> provider) {
-            return scopeProvider.get().scope(key, provider);
-          }
-        };
-
     try {
       bindScope(
-          Class.forName(GUICEBRRY_TEST_SCOPED_ANNOTATION).asSubclass(Annotation.class), scope);
+          Class.forName(GUICEBRRY_TEST_SCOPED_ANNOTATION).asSubclass(Annotation.class),
+          TestScope.INSTANCE);
     } catch (ClassNotFoundException | ClassCastException e) {
-      throw new RuntimeException(
-          "GuiceberryCompatibilityModule installed but Guiceberry is not available.", e);
+      // TestScoped not on classpath, compatibility not required.
+    }
+
+    install(new TestingServiceModule() {
+      @Override
+      protected void configureTestingServices() {
+        bindTestingService(GuiceBerryEnvMainService.class);
+      }
+    });
+  }
+
+  /** Service which runs any configured GuiceBerryEnvMain before all tests. */
+  private static class GuiceBerryEnvMainService implements TestingService {
+    @Inject Injector injector;
+
+    @BeforeSuite
+    public void run() throws Throwable {
+      Class<?> envMainClass;
+      try {
+        envMainClass = Class.forName(GUICEBRRY_ENV_MAIN);
+      } catch (ClassNotFoundException e) {
+        // GuiceBerryEnvMain not on classpath, nothing to do.
+        return;
+      }
+      if (injector.getExistingBinding(Key.get(envMainClass)) == null) {
+        // No binding configured for GuiceBerryEnvMain, nothing to do.
+        return;
+      }
+      Object envMain = injector.getInstance(envMainClass);
+      try {
+        envMainClass.getMethod(ENV_MAIN_RUN_METHOD).invoke(envMain);
+      } catch (InvocationTargetException e) {
+        throw e.getCause();
+      } catch (ReflectiveOperationException e) {
+        throw new RuntimeException("Failed to invoke run on GuiceBerryEnvMain", e);
+      }
     }
   }
 }

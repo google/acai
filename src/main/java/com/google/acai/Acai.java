@@ -27,6 +27,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.util.Modules;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -104,9 +105,13 @@ public class Acai implements MethodRule {
     if (environments.containsKey(module)) {
       return environments.get(module);
     }
+    // Use modules override to configure TearDownAccepter and GuiceberryCompatibilityModule.
+    // This allows reuse of modules which install GuiceBerryModule by overriding its bindings
+    // with equivalent ones from Acai.
     Injector injector =
         Guice.createInjector(
-            instantiateModule(module), new TearDownAccepterModule(), new TestScopeModule());
+            Modules.override(instantiateModule(module), new TestScopeModule())
+                .with(new TearDownAccepterModule(), new GuiceberryCompatibilityModule()));
     TestEnvironment testEnvironment =
         new TestEnvironment(
             injector,
