@@ -16,15 +16,13 @@
 
 package com.google.acai;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.testing.TearDown;
 import com.google.common.testing.TearDownAccepter;
 import com.google.common.testing.TearDownStack;
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.multibindings.Multibinder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import javax.annotation.CheckReturnValue;
 import javax.inject.Singleton;
 
 /**
@@ -35,16 +33,32 @@ import javax.inject.Singleton;
  * <pre>
  *   class MyModule extends AbstractModule {
  *     {@literal @}Override protected void configure() {
- *       install(new TestingServiceModule() {
- *         {@literal @}Override protected void configureTestingServices() {
- *           bindTestingService(MyTestingService.class);
- *         }
- *       }
+ *       install(TestingServiceModule.forServices(MyTestingService.class);
  *     }
  *   }
  * </pre>
  */
 public abstract class TestingServiceModule extends AbstractModule {
+
+  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  public static TestingServiceModule forServices(
+      Iterable<Class<? extends TestingService>> services) {
+    return new TestingServiceModule() {
+      @Override
+      protected void configureTestingServices() {
+        for (Class<? extends TestingService> service : services) {
+          bindTestingService(service);
+        }
+      }
+    };
+  }
+
+  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  @SafeVarargs
+  @CheckReturnValue
+  public static TestingServiceModule forServices(Class<? extends TestingService>... services) {
+    return forServices(ImmutableList.copyOf(services));
+  }
 
   @Override
   protected final void configure() {
