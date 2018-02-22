@@ -23,6 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.testing.TearDownAccepter;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.ConfigurationException;
@@ -52,6 +53,7 @@ public class AcaiTest {
     Service.methodCalls = MethodCalls.create();
     DependentService.methodCalls = MethodCalls.create();
     ServiceWithFailingBeforeTest.shouldFail = true;
+    ModuleUsingTearDownAccepter.tearDownCount = 0;
     Acai.testOnlyResetEnvironments();
   }
 
@@ -159,6 +161,35 @@ public class AcaiTest {
     new Acai(ModuleWithThrowingConstructor.class)
         .apply(statement, frameworkMethod, new Object())
         .evaluate();
+  }
+
+  @Test
+  public void tearDownAcceptorRunsTearDownAfterTest() throws Throwable {
+    TearDownAccepterTest test = new TearDownAccepterTest();
+    Acai acai = new Acai(ModuleUsingTearDownAccepter.class);
+
+    acai.apply(
+        new Statement() {
+          @Override
+          public void evaluate() {
+            assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(0);
+
+          }
+        },
+        frameworkMethod, test).evaluate();
+
+    assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(1);
+  }
+
+  @Test
+  public void tearDownAcceptorRunsTearDownForEachTest() throws Throwable {
+    TearDownAccepterTest test = new TearDownAccepterTest();
+    Acai acai = new Acai(ModuleUsingTearDownAccepter.class);
+
+    acai.apply(statement, frameworkMethod, test).evaluate();
+    acai.apply(statement, frameworkMethod, test).evaluate();
+
+    assertThat(ModuleUsingTearDownAccepter.tearDownCount).isEqualTo(2);
   }
 
   private static class TestModule extends AbstractModule {
@@ -334,6 +365,26 @@ public class AcaiTest {
     protected void configure() {
       // No-op.
     }
+  }
+
+  static class ModuleUsingTearDownAccepter extends AbstractModule {
+    static int tearDownCount = 0;
+
+    @Override
+    protected void configure() {
+      // No-op.
+    }
+
+    @Provides
+    @TestBindingAnnotation
+    String provideValueAndAddTearDown(TearDownAccepter tearDownAccepter) {
+      tearDownAccepter.addTearDown(() -> tearDownCount++);
+      return "value";
+    }
+  }
+
+  private static class TearDownAccepterTest {
+    @Inject @TestBindingAnnotation String injected;
   }
 
   @Retention(RUNTIME)

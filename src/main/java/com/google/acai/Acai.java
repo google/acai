@@ -19,7 +19,7 @@ package com.google.acai;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.acai.TestScope.TestScopeModule;
-import com.google.acai.TestingServiceModule.NoopTestingServiceModule;
+import com.google.acai.TestingServiceModule.TearDownAccepterModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -106,7 +106,7 @@ public class Acai implements MethodRule {
     }
     Injector injector =
         Guice.createInjector(
-            instantiateModule(module), new NoopTestingServiceModule(), new TestScopeModule());
+            instantiateModule(module), new TearDownAccepterModule(), new TestScopeModule());
     TestEnvironment testEnvironment =
         new TestEnvironment(
             injector,
