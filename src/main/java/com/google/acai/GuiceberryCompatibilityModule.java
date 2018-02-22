@@ -16,23 +16,38 @@
 
 package com.google.acai;
 
+import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
 /**
- * Module which provides some limited compatibility with Guiceberry.
+ * Module which provides some limited compatibility with GuiceBerry.
  *
- * <p>Allows some modules which were designed for Guiceberry to be reused with Acai. Currently
- * supports Guiceberry's TestScoped annotation and GuiceBerryEnvMain.
+ * <p>Allows some modules which were designed for GuiceBerry to be reused with Acai. Currently
+ * supports GuiceBerry's {@code TestScoped} annotation, {@code GuiceBerryEnvMain}, {@code
+ * TestWrapper} and {@code TestScopeListener}.
+ *
+ * <p>Intended to facilitate reuse of code which cannot be changed and allow migrations to be done
+ * incrementally. Not intended to provide a complete reimplementation of GuiceBerry. Using
+ * GuiceBerry concepts in tests that use Acai is not recommended.
  */
 class GuiceberryCompatibilityModule extends AbstractModule {
   private static final String GUICEBRRY_TEST_SCOPED_ANNOTATION = "com.google.guiceberry.TestScoped";
-  private static final String GUICEBRRY_ENV_MAIN = "com.google.guiceberry.GuiceBerryEnvMain";
-  private static final String ENV_MAIN_RUN_METHOD = "run";
+  private static final MethodReference GUICEBERRY_ENV_MAIN_RUN =
+      MethodReference.create("com.google.guiceberry.GuiceBerryEnvMain", "run");
+  private static final MethodReference TEST_WRAPPER_RUN_BEFORE_TEST =
+      MethodReference.create("com.google.guiceberry.TestWrapper", "toRunBeforeTest");
+  private static final MethodReference TEST_SCOPE_LISTENER_ENTERING_SCOPE =
+      MethodReference.create(
+          "com.google.inject.testing.guiceberry.TestScopeListener", "enteringScope");
+  private static final MethodReference TEST_SCOPE_LISTENER_EXITING_SCOPE =
+      MethodReference.create(
+          "com.google.inject.testing.guiceberry.TestScopeListener", "exitingScope");
 
   @Override
   protected void configure() {
@@ -44,40 +59,72 @@ class GuiceberryCompatibilityModule extends AbstractModule {
       // TestScoped not on classpath, compatibility not required.
     }
 
-    install(
-        new TestingServiceModule() {
-          @Override
-          protected void configureTestingServices() {
-            bindTestingService(GuiceBerryEnvMainService.class);
-          }
-        });
+    install(TestingServiceModule.forServices(GuiceBerryService.class));
   }
 
-  /** Service which runs any configured GuiceBerryEnvMain before all tests. */
-  private static class GuiceBerryEnvMainService implements TestingService {
+  /** Adapter which wraps GuiceBerry concepts in a TestingService. */
+  private static class GuiceBerryService implements TestingService {
     @Inject Injector injector;
 
     @BeforeSuite
     public void run() throws Throwable {
-      Class<?> envMainClass;
-      try {
-        envMainClass = Class.forName(GUICEBRRY_ENV_MAIN);
-      } catch (ClassNotFoundException e) {
-        // GuiceBerryEnvMain not on classpath, nothing to do.
-        return;
-      }
-      if (injector.getExistingBinding(Key.get(envMainClass)) == null) {
-        // No binding configured for GuiceBerryEnvMain, nothing to do.
-        return;
-      }
-      Object envMain = injector.getInstance(envMainClass);
-      try {
-        envMainClass.getMethod(ENV_MAIN_RUN_METHOD).invoke(envMain);
-      } catch (InvocationTargetException e) {
-        throw e.getCause();
-      } catch (ReflectiveOperationException e) {
-        throw new RuntimeException("Failed to invoke run on GuiceBerryEnvMain", e);
-      }
+      invokeIfBound(injector, GUICEBERRY_ENV_MAIN_RUN);
     }
+
+    @BeforeTest
+    public void beforeTest() throws Throwable {
+      invokeIfBound(injector, TEST_SCOPE_LISTENER_ENTERING_SCOPE);
+      invokeIfBound(injector, TEST_WRAPPER_RUN_BEFORE_TEST);
+    }
+
+    @AfterTest
+    public void afterTest() throws Throwable {
+      invokeIfBound(injector, TEST_SCOPE_LISTENER_EXITING_SCOPE);
+    }
+  }
+
+  /**
+   * Invokes the nullary {@code method} if there is an existing binding for its class on {@code
+   * injector}.
+   *
+   * <p>If {@code className} cannot be found in the classpath or there is no binding configured this
+   * method does nothing.
+   */
+  private static void invokeIfBound(Injector injector, MethodReference method) throws Throwable {
+    Optional<Class<?>> clazz =
+        classForName(method.className())
+            .filter(c -> injector.getExistingBinding(Key.get(c)) != null);
+
+    if (!clazz.isPresent()) {
+      // No existing binding for class, nothing to do.
+      return;
+    }
+
+    try {
+      clazz.get().getMethod(method.methodName()).invoke(injector.getInstance(clazz.get()));
+    } catch (InvocationTargetException e) {
+      throw e.getCause();
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException("Failed to invoke run on GuiceBerryEnvMain", e);
+    }
+  }
+
+  private static Optional<Class<?>> classForName(String className) {
+    try {
+      return Optional.of(Class.forName(className));
+    } catch (ClassNotFoundException e) {
+      return Optional.empty();
+    }
+  }
+
+  @AutoValue
+  abstract static class MethodReference {
+    static MethodReference create(String className, String methodName) {
+      return new AutoValue_GuiceberryCompatibilityModule_MethodReference(className, methodName);
+    }
+
+    abstract String className();
+
+    abstract String methodName();
   }
 }
