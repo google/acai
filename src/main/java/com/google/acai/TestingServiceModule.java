@@ -16,8 +16,16 @@
 
 package com.google.acai;
 
+import com.google.common.testing.TearDown;
+import com.google.common.testing.TearDownAccepter;
+import com.google.common.testing.TearDownStack;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.multibindings.Multibinder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import javax.inject.Singleton;
 
 /**
  * Abstract module which can be used to bind instances of {@link TestingService}.
@@ -62,13 +70,28 @@ public abstract class TestingServiceModule extends AbstractModule {
   protected abstract void configureTestingServices();
 
   /**
-   * Noop module used to ensure mutlibinding exists even in the case where no {@code TestingService}
-   * instances are configured.
+   * Testing service which enables support for Guava's {@link TearDownAccepter}.
    */
-  static class NoopTestingServiceModule extends AbstractModule {
+  static class TearDownAccepterModule extends TestingServiceModule {
     @Override
-    protected void configure() {
-      Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class);
+    protected void configureTestingServices() {
+      bind(TearDownService.class).in(Singleton.class);
+      bindTestingService(TearDownService.class);
+      bind(TearDownAccepter.class).to(TearDownService.class);
+    }
+
+    private static class TearDownService implements TestingService, TearDownAccepter {
+      private final TearDownStack tearDowns = new TearDownStack();
+
+      @Override
+      public void addTearDown(TearDown tearDown) {
+        tearDowns.addTearDown(tearDown);
+      }
+
+      @AfterTest
+      void tearDown() {
+        tearDowns.runTearDown();
+      }
     }
   }
 }
