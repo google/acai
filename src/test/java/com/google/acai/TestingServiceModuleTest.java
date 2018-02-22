@@ -17,6 +17,7 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -37,7 +38,6 @@ public class TestingServiceModuleTest {
             new TestingServiceModule() {
               @Override
               protected void configureTestingServices() {
-                bindTestingService(ServiceToBindByClass.class);
                 bindTestingService(serviceInstance);
               }
             });
@@ -45,20 +45,26 @@ public class TestingServiceModuleTest {
     Set<TestingService> boundServices =
         injector.getInstance(new Key<Set<TestingService>>(AcaiInternal.class) {});
 
-    assertThat(boundServices).containsExactly(serviceInstance, new ServiceToBindByClass());
+    assertThat(boundServices).contains(serviceInstance);
   }
 
-  private static class ServiceToBindByClass implements TestingService {
-    @Override
-    public boolean equals(Object obj) {
-      return obj.getClass() == ServiceToBindByClass.class;
-    }
+  @Test
+  public void servicesAreBoundUsingFactoryMethod() {
+    Injector injector =
+        Guice.createInjector(
+            TestingServiceModule.forServices(
+                ServiceToBindByClass.class, ServiceToBindByClassTwo.class));
+
+    Set<TestingService> boundServices =
+        injector.getInstance(new Key<Set<TestingService>>(AcaiInternal.class) {});
+
+    assertThat(boundServices.stream().map(Object::getClass))
+        .containsExactly(ServiceToBindByClass.class, ServiceToBindByClassTwo.class);
   }
 
-  private static class ServiceToBindByInstance implements TestingService {
-    @Override
-    public boolean equals(Object obj) {
-      return obj == this;
-    }
-  }
+  private static class ServiceToBindByClass implements TestingService {}
+
+  private static class ServiceToBindByClassTwo implements TestingService {}
+
+  private static class ServiceToBindByInstance implements TestingService {}
 }

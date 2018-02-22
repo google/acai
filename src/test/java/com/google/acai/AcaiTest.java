@@ -17,7 +17,7 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assert_;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -46,7 +46,6 @@ public class AcaiTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private Statement statement;
   @Mock private FrameworkMethod frameworkMethod;
-  @Mock private Service testingService;
 
   @Before
   public void cleanup() {
@@ -99,7 +98,7 @@ public class AcaiTest {
     Acai acai = new Acai(TestModule.class);
     try {
       acai.apply(statement, frameworkMethod, new TestWithUnsatisfiedBinding()).evaluate();
-      assert_().fail("Expected ConfigurationException to be thrown.");
+      assertWithMessage("Expected ConfigurationException to be thrown.").fail();
     } catch (ConfigurationException e) {
       // Expected: TestWithUnsatisfiedBinding requires binding not satisfied by TestModule.
     }
@@ -114,7 +113,7 @@ public class AcaiTest {
     Acai acai = new Acai(FailingBeforeTestModule.class);
     try {
       acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
-      assert_().fail("Expected TestException to be thrown.");
+      assertWithMessage("Expected TestException to be thrown.").fail();
     } catch (TestException e) {
       // Expected: ServiceWithFailingBeforeTest throws TestException in @BeforeTest.
     }
@@ -260,8 +259,7 @@ public class AcaiTest {
 
     @BeforeSuite
     private void beforeSuite() {
-      assert_()
-          .withFailureMessage("DependentService should be run after Service")
+      assertWithMessage("DependentService should be run after Service")
           .that(Service.methodCalls.beforeSuite())
           .isEqualTo(methodCalls.beforeSuite() + 1);
       methodCalls = methodCalls.incrementBeforeSuite();
@@ -269,8 +267,7 @@ public class AcaiTest {
 
     @BeforeTest
     private void beforeTest() {
-      assert_()
-          .withFailureMessage("DependentService should be run after Service")
+      assertWithMessage("DependentService should be run after Service")
           .that(Service.methodCalls.beforeTest())
           .isEqualTo(methodCalls.beforeTest() + 1);
       methodCalls = methodCalls.incrementBeforeTest();
@@ -279,8 +276,7 @@ public class AcaiTest {
     @AfterTest
     private void afterTest() {
       methodCalls = methodCalls.incrementAfterTest();
-      assert_()
-          .withFailureMessage("Service should be cleaned up after DependentService")
+      assertWithMessage("Service should be cleaned up after DependentService")
           .that(Service.methodCalls.afterTest())
           .isEqualTo(methodCalls.afterTest() - 1);
     }
