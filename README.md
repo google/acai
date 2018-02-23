@@ -33,13 +33,13 @@ your dependencies in `pom.xml`:
 <dependency>
   <groupId>com.google.acai</groupId>
   <artifactId>acai</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <scope>test</scope>
 </dependency>
 ```
 
 See the [artifact details on Maven Central](
-http://search.maven.org/#artifactdetails|com.google.acai|acai|0.1|)
+http://search.maven.org/#artifactdetails|com.google.acai|acai|1.1|)
 for dependency information for other build systems or to simply download the
 jars.
 
