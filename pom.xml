@@ -26,7 +26,7 @@
   <url>https://github.com/google/acai</url>
 
   <prerequisites>
-    <maven>3.0.4</maven>
+    <maven>3.1</maven>
   </prerequisites>
 
   <licenses>
@@ -75,7 +75,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.1</version>
+        <version>3.7.0</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -94,7 +94,7 @@
       <plugin>
         <groupId>org.bsc.maven</groupId>
         <artifactId>maven-processor-plugin</artifactId>
-        <version>2.2.4</version>
+        <version>3.3.2</version>
         <executions>
           <execution>
             <id>process-annotations</id>
@@ -124,7 +124,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.4</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -162,7 +162,7 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.7</version>
+        <version>1.6.8</version>
         <extensions>true</extensions>
         <configuration>
            <serverId>ossrh</serverId>
@@ -173,7 +173,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.5</version>
         <configuration>
           <rulesUri>file://${basedir}/version-rules.xml</rulesUri>
         </configuration>
@@ -199,7 +199,7 @@
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>error_prone_annotations</artifactId>
-      <version>2.0.15</version>
+      <version>2.2.0</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -209,17 +209,17 @@
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
-      <version>4.0</version>
+      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-multibindings</artifactId>
-      <version>4.0</version>
+      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.value</groupId>
       <artifactId>auto-value</artifactId>
-      <version>1.4-rc2</version>
+      <version>1.5.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
