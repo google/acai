@@ -51,13 +51,9 @@ class GuiceberryCompatibilityModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    try {
-      bindScope(
-          Class.forName(GUICEBRRY_TEST_SCOPED_ANNOTATION).asSubclass(Annotation.class),
-          TestScope.INSTANCE);
-    } catch (ClassNotFoundException | ClassCastException e) {
-      // TestScoped not on classpath, compatibility not required.
-    }
+    classForName(GUICEBRRY_TEST_SCOPED_ANNOTATION)
+        .map(clazz -> clazz.asSubclass(Annotation.class))
+        .ifPresent(annotation -> bindScope(annotation, TestScope.INSTANCE));
 
     install(TestingServiceModule.forServices(GuiceBerryService.class));
   }
