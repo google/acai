@@ -25,10 +25,6 @@
   <description>Testing library for JUnit4 and Guice.</description>
   <url>https://github.com/google/acai</url>
 
-  <prerequisites>
-    <maven>3.1</maven>
-  </prerequisites>
-
   <licenses>
     <license>
       <name>The Apache License, Version 2.0</name>
@@ -177,6 +173,26 @@
         <configuration>
           <rulesUri>file://${basedir}/version-rules.xml</rulesUri>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M1</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.1</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
