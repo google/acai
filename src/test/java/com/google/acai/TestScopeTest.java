@@ -22,6 +22,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -122,6 +123,102 @@ public class TestScopeTest {
     assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
   }
 
+  @Test
+  public void threadStartedByTestCanAccessSameInstance_injectedByChildThreadFirst()
+      throws Throwable {
+    FakeTestClassWithProvider test = new FakeTestClassWithProvider();
+    AtomicReference<MyTestScopedClass> instanceInChildThread = new AtomicReference<>();
+    AtomicReference<MyTestScopedClass> instanceInMainThread = new AtomicReference<>();
+
+    new Acai(EmptyTestModule.class)
+        .apply(
+            new Statement() {
+              @Override
+              public void evaluate() throws Throwable {
+                Thread thread = new Thread(() -> {
+                  instanceInChildThread.set(test.provider.get());
+                });
+                thread.start();
+                thread.join();
+                instanceInMainThread.set(test.provider.get());
+              }
+            },
+            frameworkMethod,
+            test)
+        .evaluate();
+
+    assertThat(instanceInMainThread.get()).isSameAs(instanceInChildThread.get());
+  }
+
+  @Test
+  public void threadStartedByTestCanAccessSameInstance_injectedByMainThreadFirst()
+      throws Throwable {
+    FakeTestClassWithProvider test = new FakeTestClassWithProvider();
+    AtomicReference<MyTestScopedClass> instanceInChildThread = new AtomicReference<>();
+    AtomicReference<MyTestScopedClass> instanceInMainThread = new AtomicReference<>();
+
+    new Acai(EmptyTestModule.class)
+        .apply(
+            new Statement() {
+              @Override
+              public void evaluate() throws Throwable {
+                instanceInMainThread.set(test.provider.get());
+                Thread thread = new Thread(() -> {
+                  instanceInChildThread.set(test.provider.get());
+                });
+                thread.start();
+                thread.join();
+              }
+            },
+            frameworkMethod,
+            test)
+        .evaluate();
+
+    assertThat(instanceInMainThread.get()).isSameAs(instanceInChildThread.get());
+  }
+
+  @Test
+  public void threadStartedByTestCanNoLongerAccessTestScopeAfterTestFinished()
+      throws Throwable {
+    FakeTestClassWithProvider test = new FakeTestClassWithProvider();
+    AtomicReference<Thread> childThreadHolder = new AtomicReference<>();
+    AtomicReference<Exception> thrownExceptionHolder = new AtomicReference<>();
+    final CountDownLatch endTest = new CountDownLatch(1);
+
+    new Acai(EmptyTestModule.class)
+        .apply(
+            new Statement() {
+              @Override
+              public void evaluate() throws Throwable {
+                Thread thread = new Thread(() -> {
+                  try {
+                    endTest.await();
+                  } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                  }
+                  try {
+                    test.provider.get();
+                  } catch (Exception e) {
+                    thrownExceptionHolder.set(e);
+                  }
+                });
+                thread.start();
+                childThreadHolder.set(thread);
+              }
+            },
+            frameworkMethod,
+            test)
+        .evaluate();
+
+    // Unblock the child thread, that will then execute the provider.get() call.
+    endTest.countDown();
+    childThreadHolder.get().join();
+
+    Exception e = thrownExceptionHolder.get();
+    assertThat(e).isInstanceOf(ProvisionException.class);
+    assertThat(e).hasMessageThat().contains("@TestScoped binding outside test");
+  }
+
   private static class EmptyTestModule extends AbstractModule {
     @Override
     protected void configure() {
@@ -146,6 +243,10 @@ public class TestScopeTest {
   private static class FakeTestClass {
     @Inject MyTestScopedClass instanceOne;
     @Inject MyTestScopedClass instanceTwo;
+  }
+
+  private static class FakeTestClassWithProvider {
+    @Inject Provider<MyTestScopedClass> provider;
   }
 
   @TestScoped

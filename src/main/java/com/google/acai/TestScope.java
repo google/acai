@@ -25,19 +25,23 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /** Scope for bindings annotated with {@link TestScoped}. */
 class TestScope implements Scope {
   static final TestScope INSTANCE = new TestScope();
-  private final ThreadLocal<Map<Key<?>, Object>> values = new ThreadLocal<>();
+  private final InheritableThreadLocal<AtomicReference<Map<Key<?>, Object>>> values =
+      new InheritableThreadLocal<>();
 
   void enter() {
     checkState(values.get() == null, "TestScope is already in progress.");
-    values.set(new HashMap<>());
+    values.set(new AtomicReference<>(new HashMap<>()));
   }
 
   void exit() {
     checkState(values.get() != null, "TestScope not in progress");
+    // Make sure that any future accesses to the map in other threads will fail.
+    values.get().set(null);
     values.remove();
   }
 
@@ -57,11 +61,11 @@ class TestScope implements Scope {
   }
 
   private <T> Map<Key<?>, Object> getScopedObjectMap(Key<T> key) {
-    Map<Key<?>, Object> scopedObjects = values.get();
-    if (scopedObjects == null) {
+    AtomicReference<Map<Key<?>, Object>> mapHolder = values.get();
+    if (mapHolder == null || mapHolder.get() == null) {
       throw new OutOfScopeException("Attempt to inject @TestScoped binding outside test: " + key);
     }
-    return scopedObjects;
+    return mapHolder.get();
   }
 
   static class TestScopeModule extends AbstractModule {
