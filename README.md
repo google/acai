@@ -183,6 +183,7 @@ scope. Therefore if you wish to access `@TestScoped` bindings in a `@BeforeTest`
 or `@AfterTest` method you should inject a `Provider` and call `get` on it
 within those methods as shown in the above example.
 
+### When not to use TestScoped
 Note that while `@TestScoped` works well for helpers injected only into tests
 (such as the WebDriver instance in the above example) for fakes and other
 objects which are shared with the system under test it is usually simpler to use
