@@ -31,7 +31,9 @@ import com.google.inject.Provides;
 import java.lang.annotation.Retention;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -77,7 +79,7 @@ public class AcaiTest {
   }
 
   @Test
-  public void beforeSuiteRunOnceOnly() throws Throwable {
+  public void beforeClassRunOnceOnly() throws Throwable {
     new Acai(TestModule.class).apply(statement, frameworkMethod, new Object()).evaluate();
     new Acai(TestModule.class).apply(statement, frameworkMethod, new Object()).evaluate();
 
@@ -115,7 +117,7 @@ public class AcaiTest {
       acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
       assertWithMessage("Expected TestException to be thrown.").fail();
     } catch (TestException e) {
-      // Expected: ServiceWithFailingBeforeTest throws TestException in @BeforeTest.
+      // Expected: ServiceWithFailingBeforeTest throws TestException in @Before.
     }
 
     ServiceWithFailingBeforeTest.shouldFail = false;
@@ -124,13 +126,13 @@ public class AcaiTest {
   }
 
   @Test
-  public void testsAreInjectedAfterRunningBeforeSuite() throws Throwable {
+  public void testsAreInjectedAfterRunningBeforeClass() throws Throwable {
     ExampleTest test = new ExampleTest();
 
     new Acai(TestModule.class).apply(statement, frameworkMethod, test).evaluate();
 
     // Check injection happened after Service.initialized was set to true
-    // by @BeforeSuite method.
+    // by @BeforeClass method.
     assertThat(test.initialized).isEqualTo(true);
   }
 
@@ -237,18 +239,18 @@ public class AcaiTest {
     static MethodCalls methodCalls = MethodCalls.create();
     boolean initialized = false;
 
-    @BeforeSuite
-    private void beforeSuite() {
+    @BeforeClass
+    private void beforeClass() {
       initialized = true;
-      methodCalls = methodCalls.incrementBeforeSuite();
+      methodCalls = methodCalls.incrementBeforeClass();
     }
 
-    @BeforeTest
+    @Before
     private void beforeTest() {
       methodCalls = methodCalls.incrementBeforeTest();
     }
 
-    @AfterTest
+    @After
     private void afterTest() {
       methodCalls = methodCalls.incrementAfterTest();
     }
@@ -258,15 +260,15 @@ public class AcaiTest {
   private static class DependentService implements TestingService {
     static MethodCalls methodCalls = MethodCalls.create();
 
-    @BeforeSuite
-    private void beforeSuite() {
+    @BeforeClass
+    private void beforeClass() {
       assertWithMessage("DependentService should be run after Service")
-          .that(Service.methodCalls.beforeSuite())
-          .isEqualTo(methodCalls.beforeSuite() + 1);
-      methodCalls = methodCalls.incrementBeforeSuite();
+          .that(Service.methodCalls.beforeClass())
+          .isEqualTo(methodCalls.beforeClass() + 1);
+      methodCalls = methodCalls.incrementBeforeClass();
     }
 
-    @BeforeTest
+    @Before
     private void beforeTest() {
       assertWithMessage("DependentService should be run after Service")
           .that(Service.methodCalls.beforeTest())
@@ -274,7 +276,7 @@ public class AcaiTest {
       methodCalls = methodCalls.incrementBeforeTest();
     }
 
-    @AfterTest
+    @After
     private void afterTest() {
       methodCalls = methodCalls.incrementAfterTest();
       assertWithMessage("Service should be cleaned up after DependentService")
@@ -285,7 +287,7 @@ public class AcaiTest {
 
   @AutoValue
   abstract static class MethodCalls {
-    abstract int beforeSuite();
+    abstract int beforeClass();
 
     abstract int beforeTest();
 
@@ -295,20 +297,20 @@ public class AcaiTest {
       return new AutoValue_AcaiTest_MethodCalls(0, 0, 0);
     }
 
-    static MethodCalls create(int beforeSuite, int beforeTest, int afterTest) {
-      return new AutoValue_AcaiTest_MethodCalls(beforeSuite, beforeTest, afterTest);
+    static MethodCalls create(int beforeClass, int beforeTest, int afterTest) {
+      return new AutoValue_AcaiTest_MethodCalls(beforeClass, beforeTest, afterTest);
     }
 
-    MethodCalls incrementBeforeSuite() {
-      return create(beforeSuite() + 1, beforeTest(), afterTest());
+    MethodCalls incrementBeforeClass() {
+      return create(beforeClass() + 1, beforeTest(), afterTest());
     }
 
     MethodCalls incrementBeforeTest() {
-      return create(beforeSuite(), beforeTest() + 1, afterTest());
+      return create(beforeClass(), beforeTest() + 1, afterTest());
     }
 
     MethodCalls incrementAfterTest() {
-      return create(beforeSuite(), beforeTest(), afterTest() + 1);
+      return create(beforeClass(), beforeTest(), afterTest() + 1);
     }
   }
 
@@ -326,7 +328,7 @@ public class AcaiTest {
   private static class ServiceWithFailingBeforeTest implements TestingService {
     static boolean shouldFail = true;
 
-    @BeforeTest
+    @Before
     void failingBeforeTest() {
       if (shouldFail) {
         throw new TestException();

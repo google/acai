@@ -24,6 +24,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * Internal Acai class which manages the execution of annotated methods on a {@link TestingService}.
@@ -35,19 +38,19 @@ class TestingServiceManager {
     this.testingService = checkNotNull(testingService);
   }
 
-  /** Runs all methods annotated with {@code BeforeSuite}. */
-  void beforeSuite() {
-    invokeMethodsAnnotated(BeforeSuite.class);
+  /** Runs all methods annotated with {@code BeforeClass}. */
+  void beforeClass() {
+    invokeMethodsAnnotated(BeforeClass.class);
   }
 
-  /** Runs all methods annotated with {@code BeforeTest}. */
+  /** Runs all methods annotated with {@code Before}. */
   void beforeTest() {
-    invokeMethodsAnnotated(BeforeTest.class);
+    invokeMethodsAnnotated(Before.class);
   }
 
-  /** Runs all methods annotated with {@code AfterTest}. */
+  /** Runs all methods annotated with {@code After}. */
   void afterTest() {
-    invokeMethodsAnnotated(AfterTest.class);
+    invokeMethodsAnnotated(After.class);
   }
 
   private void invokeMethodsAnnotated(Class<? extends Annotation> annotation) {

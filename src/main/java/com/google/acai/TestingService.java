@@ -20,8 +20,8 @@ package com.google.acai;
  * Marker interface for testing services to be used with {@link Acai}.
  *
  * <p>Implementing classes should add zero argument methods annotated with one of {@link
- * BeforeSuite}, {@link BeforeTest} or {@link AfterTest} to have them run by Acai at the relevant
- * time during test suite execution.
+ * org.junit.BeforeClass}, {@link org.junit.Before} or {@link org.junit.After} to have them run
+ * by Acai at the relevant time during test suite execution.
  *
  * <p>Multiple {@code TestingService} instances can be bound in a single {@link
  * TestingServiceModule} and each {@code TestingService} may contain multiple or no methods with
@@ -31,12 +31,12 @@ package com.google.acai;
  *
  * <pre>
  *   class MyTestingService implements TestingService {
- *     {@literal @}BeforeSuite
+ *     {@literal @}BeforeClass
  *     public void startServer() {
  *       // Start your server here, runs once before all tests.
  *     }
  *
- *     {@literal @}AfterTest
+ *     {@literal @}After
  *     public void clearDatastore() {
  *       // Clean up test state here to isolate tests from one-another.
  *     }

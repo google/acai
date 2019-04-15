@@ -19,6 +19,9 @@ package com.google.acai;
 import static com.google.common.truth.Truth.assertThat;
 import static org.hamcrest.Matchers.isA;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,12 +33,12 @@ public class TestingServiceManagerTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void callBeforeSuiteMethod() {
+  public void callBeforeClassMethod() {
     MyTestingService testingService = new MyTestingService();
 
-    new TestingServiceManager(testingService).beforeSuite();
+    new TestingServiceManager(testingService).beforeClass();
 
-    assertThat(testingService.beforeSuiteCount).isEqualTo(1);
+    assertThat(testingService.beforeClassCount).isEqualTo(1);
     assertThat(testingService.beforeTestCount).isEqualTo(0);
     assertThat(testingService.afterTestCount).isEqualTo(0);
   }
@@ -46,7 +49,7 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeClassCount).isEqualTo(0);
     assertThat(testingService.beforeTestCount).isEqualTo(1);
     assertThat(testingService.afterTestCount).isEqualTo(0);
   }
@@ -57,7 +60,7 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).afterTest();
 
-    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeClassCount).isEqualTo(0);
     assertThat(testingService.beforeTestCount).isEqualTo(0);
     assertThat(testingService.afterTestCount).isEqualTo(1);
   }
@@ -86,7 +89,7 @@ public class TestingServiceManagerTest {
 
     new TestingServiceManager(testingService).beforeTest();
 
-    assertThat(testingService.beforeSuiteCount).isEqualTo(0);
+    assertThat(testingService.beforeClassCount).isEqualTo(0);
     assertThat(testingService.beforeTestCount).isEqualTo(1);
     assertThat(testingService.afterTestCount).isEqualTo(0);
   }
@@ -96,7 +99,7 @@ public class TestingServiceManagerTest {
     thrown.expect(TestRuntimeException.class);
     new TestingServiceManager(
             new TestingService() {
-              @BeforeTest
+              @Before
               void beforeTest() {
                 throw new TestRuntimeException();
               }
@@ -109,7 +112,7 @@ public class TestingServiceManagerTest {
     thrown.expectCause(isA(TestException.class));
     new TestingServiceManager(
             new TestingService() {
-              @BeforeTest
+              @Before
               void beforeTest() throws TestException {
                 throw new TestException();
               }
@@ -119,8 +122,8 @@ public class TestingServiceManagerTest {
 
   @Test
   public void staticMethodsNotInvoked() {
-    new TestingServiceManager(new ServiceWithStaticMethod()).beforeSuite();
-    assertThat(ServiceWithStaticMethod.staticBeforeSuiteMethodInvoked).isFalse();
+    new TestingServiceManager(new ServiceWithStaticMethod()).beforeClass();
+    assertThat(ServiceWithStaticMethod.staticBeforeClassMethodInvoked).isFalse();
   }
 
   private static class TestRuntimeException extends RuntimeException {}
@@ -128,44 +131,44 @@ public class TestingServiceManagerTest {
   private static class TestException extends Exception {}
 
   private static class MyTestingService implements TestingService {
-    int beforeSuiteCount = 0;
+    int beforeClassCount = 0;
     int beforeTestCount = 0;
     int afterTestCount = 0;
     int privateBeforeTestCount = 0;
     int beforeTestWithParameterCount = 0;
 
-    @BeforeSuite
-    public void incrementBeforeSuiteCount() {
-      beforeSuiteCount++;
+    @BeforeClass
+    public void incrementBeforeClassCount() {
+      beforeClassCount++;
     }
 
-    @BeforeTest
+    @Before
     public void incrementBeforeTestCount() {
       beforeTestCount++;
     }
 
-    @BeforeTest
+    @Before
     private void incrementPrivateBeforeTestCount() {
       privateBeforeTestCount++;
     }
 
-    @BeforeTest
+    @Before
     private void incrementBeforeTestWithParameterCount(int someParameter) {
       beforeTestWithParameterCount++;
     }
 
-    @AfterTest
+    @After
     public void incrementAfterTestCount() {
       afterTestCount++;
     }
   }
 
   private static class ServiceWithStaticMethod implements TestingService {
-    static boolean staticBeforeSuiteMethodInvoked = false;
+    static boolean staticBeforeClassMethodInvoked = false;
 
-    @BeforeSuite
+    @BeforeClass
     static void willNotBeInvoked() {
-      staticBeforeSuiteMethodInvoked = true;
+      staticBeforeClassMethodInvoked = true;
     }
   }
 }

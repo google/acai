@@ -110,7 +110,7 @@ public class ExampleFunctionalTest {
   private static class MyServerRunner implements TestingService {
     @Inject private MyServer myServer;
 
-    @BeforeSuite void startServer() {
+    @BeforeClass void startServer() {
       myServer.start().awaitStarted();
     }
   }
@@ -118,14 +118,14 @@ public class ExampleFunctionalTest {
   private static class MyFakeDatabaseWiper implements TestingService {
     @Inject private MyFakeDatabse myFakeDatabase;
 
-    @AfterTest void wipeDatabase() {
+    @After void wipeDatabase() {
       myFakeDatabase.wipe();
     }
   }
 }
 ```
 
-Note that when a module is passed to Acai in a rule any @BeforeSuite
+Note that when a module is passed to Acai in a rule any @BeforeClass
 methods are only executed once per suite even if the same module is used in
 multiple Acai rules in multiple different test classes within that suite.
 This allows tests of the server to be structured into test classes according to
@@ -168,7 +168,7 @@ class WebdriverModule extends AbstractModule {
   static class WebDriverQuitter implements TestingService {
     @Inject Provider<WebDriver> webDriver;
 
-    @AfterTest void quitWebDriver() throws Exception {
+    @After void quitWebDriver() throws Exception {
       // Calling get on the Provider here returns the instance
       // for the test case which we are currently tearing down.
       webDriver.get().quit();
@@ -179,8 +179,8 @@ class WebdriverModule extends AbstractModule {
 
 One important point to note when using `@TestScoped` bindings is that
 `TestingService` instances are instantiated once for all tests outside of test
-scope. Therefore if you wish to access `@TestScoped` bindings in a `@BeforeTest`
-or `@AfterTest` method you should inject a `Provider` and call `get` on it
+scope. Therefore if you wish to access `@TestScoped` bindings in a `@Before`
+or `@After` method you should inject a `Provider` and call `get` on it
 within those methods as shown in the above example.
 
 ### When not to use TestScoped
@@ -234,7 +234,7 @@ public class ExampleFrontendWebdriverTest {
   private static class MyFrontendRunner implements TestingService {
     @Inject private MyFrontendServer myFrontendServer;
 
-    @BeforeSuite void startServer() {
+    @BeforeClass void startServer() {
       myFrontendServer.start().awaitStarted();
     }
   }
@@ -242,7 +242,7 @@ public class ExampleFrontendWebdriverTest {
   private static class MyBackendRunner implements TestingService {
     @Inject private MyBackendServer myBackendServer;
 
-    @BeforeSuite void startServer() {
+    @BeforeClass void startServer() {
       myBackendServer.start().awaitStarted();
     }
   }
@@ -265,7 +265,7 @@ The module class passed to the `Acai` constructor may optionally use
 The `TestingService` interface is purely a marker to allow Acai to know
 which classes provide testing services. To actually do anything implementations
 of this interface should add zero argument methods annotated with one of
-`@BeforeSuite`, `@BeforeTest` or `@AfterTest`. These methods will be run before
+`@BeforeClass`, `@Before` or `@After`. These methods will be run before
 the suite, before each test or after each test respectively. You may add as
 many methods annotated with these annotations as you wish to a
 `TestingService`; Acai will find and run them all when appropriate.
@@ -275,7 +275,7 @@ For more advanced use-cases where instance scope is not sufficient the
 case.
 
 Finally a `TestingService` implementation can be annotated `@DependsOn` to
-signal its `@BeforeSuite` and `@BeforeTest` methods need to be run after
+signal its `@BeforeClass` and `@Before` methods need to be run after
 those of another `TestingService`. This provides a simple declarative mechanism
 to order service startup in tests.
 

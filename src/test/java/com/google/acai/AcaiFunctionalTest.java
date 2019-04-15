@@ -23,7 +23,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
 import java.lang.annotation.Retention;
 import javax.inject.Inject;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,13 +41,13 @@ public class AcaiFunctionalTest {
   @Before
   public void checkAcaiRunsBeforeTestSetup() {
     assertThat(injectedValue).isNotNull();
-    assertThat(Service.beforeSuiteCount).isEqualTo(1);
+    assertThat(Service.beforeClassCount).isEqualTo(1);
   }
 
   @Test
   public void checkAcaiWorksAsJUnitRule() {
     assertThat(injectedValue).isEqualTo("injected-value");
-    assertThat(Service.beforeSuiteCount).isEqualTo(1);
+    assertThat(Service.beforeClassCount).isEqualTo(1);
     assertThat(Service.beforeTestCount).isEqualTo(1);
     assertThat(Service.afterTestCount).isEqualTo(0);
   }
@@ -65,21 +67,21 @@ public class AcaiFunctionalTest {
   }
 
   private static class Service implements TestingService {
-    static int beforeSuiteCount = 0;
+    static int beforeClassCount = 0;
     static int beforeTestCount = 0;
     static int afterTestCount = 0;
 
-    @BeforeSuite
-    public void incrementBeforeSuiteCount() {
-      beforeSuiteCount++;
+    @BeforeClass
+    public void incrementBeforeClassCount() {
+      beforeClassCount++;
     }
 
-    @BeforeTest
+    @Before
     public void incrementBeforeTestCount() {
       beforeTestCount++;
     }
 
-    @AfterTest
+    @After
     public void incrementAfterTestCount() {
       afterTestCount++;
     }

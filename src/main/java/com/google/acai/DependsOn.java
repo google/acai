@@ -26,8 +26,8 @@ import java.lang.annotation.Target;
  * Annotates a {@link com.google.acai.TestingService} as depending on another testing service.
  *
  * <p>A testing service annotated as depending on another its methods will be executed after the
- * methods of the service it depends upon when executing {@code BeforeSuite} or {@code BeforeTest}
- * methods. When running {@code AfterTest} methods the dependent service's methods will be run
+ * methods of the service it depends upon when executing {@code BeforeClass} or {@code Before}
+ * methods. When running {@code After} methods the dependent service's methods will be run
  * before those of the service it depends upon (i.e., the setup ordering is the opposite of the
  * setup ordering).
  *

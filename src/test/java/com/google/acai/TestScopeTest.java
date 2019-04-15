@@ -24,6 +24,8 @@ import com.google.inject.ProvisionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -261,12 +263,12 @@ public class TestScopeTest {
     static MyTestScopedClass valueFromBeforeTest;
     static MyTestScopedClass valueFromAfterTest;
 
-    @BeforeTest
+    @Before
     void beforeTest() {
       valueFromBeforeTest = testScoped.get();
     }
 
-    @AfterTest
+    @After
     void afterTest() {
       valueFromAfterTest = testScoped.get();
     }

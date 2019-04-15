@@ -80,7 +80,7 @@ public class Acai implements MethodRule {
       @Override
       public void evaluate() throws Throwable {
         TestEnvironment testEnvironment = getOrCreateTestEnvironment(module);
-        testEnvironment.beforeSuiteIfNotAlreadyRun();
+        testEnvironment.beforeClassIfNotAlreadyRun();
         testEnvironment.enterTestScope();
         try {
           testEnvironment.beforeTest();
@@ -164,7 +164,7 @@ public class Acai implements MethodRule {
   private static class TestEnvironment {
     private final Injector injector;
     private final ImmutableList<TestingServiceManager> testingServices;
-    private final AtomicBoolean beforeSuiteHasRun = new AtomicBoolean(false);
+    private final AtomicBoolean beforeClassHasRun = new AtomicBoolean(false);
     private final TestScope testScope;
 
     /**
@@ -181,12 +181,12 @@ public class Acai implements MethodRule {
       injector.injectMembers(target);
     }
 
-    void beforeSuiteIfNotAlreadyRun() {
-      if (beforeSuiteHasRun.getAndSet(true)) {
+    void beforeClassIfNotAlreadyRun() {
+      if (beforeClassHasRun.getAndSet(true)) {
         return;
       }
       for (TestingServiceManager testingService : testingServices) {
-        testingService.beforeSuite();
+        testingService.beforeClass();
       }
     }
 
