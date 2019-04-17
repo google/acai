@@ -24,6 +24,9 @@ import com.google.inject.Key;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * Module which provides some limited compatibility with GuiceBerry.
@@ -62,18 +65,18 @@ class GuiceberryCompatibilityModule extends AbstractModule {
   private static class GuiceBerryService implements TestingService {
     @Inject Injector injector;
 
-    @BeforeSuite
+    @BeforeClass
     public void run() throws Throwable {
       invokeIfBound(injector, GUICEBERRY_ENV_MAIN_RUN);
     }
 
-    @BeforeTest
+    @Before
     public void beforeTest() throws Throwable {
       invokeIfBound(injector, TEST_SCOPE_LISTENER_ENTERING_SCOPE);
       invokeIfBound(injector, TEST_WRAPPER_RUN_BEFORE_TEST);
     }
 
-    @AfterTest
+    @After
     public void afterTest() throws Throwable {
       invokeIfBound(injector, TEST_SCOPE_LISTENER_EXITING_SCOPE);
     }

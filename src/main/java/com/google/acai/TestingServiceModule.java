@@ -24,6 +24,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 import javax.annotation.CheckReturnValue;
 import javax.inject.Singleton;
+import org.junit.After;
 
 /**
  * Abstract module which can be used to bind instances of {@link TestingService}.
@@ -100,7 +101,7 @@ public abstract class TestingServiceModule extends AbstractModule {
         tearDowns.addTearDown(tearDown);
       }
 
-      @AfterTest
+      @After
       void tearDown() {
         tearDowns.runTearDown();
       }

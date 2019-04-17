@@ -29,8 +29,8 @@ import javax.inject.Scope;
  *
  * <p>Note that as {@link TestingService} instances are shared between multiple tests if you wish to
  * use a {@code @TestScoped} binding within a {@code TestingService} you should inject a {@code
- * Provider} and call {@link com.google.inject.Provider#get} within the {@code @BeforeTest} or
- * {@code @AfterTest} method as appropriate.
+ * Provider} and call {@link com.google.inject.Provider#get} within the {@code @Before} or
+ * {@code @After} method as appropriate.
  */
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
