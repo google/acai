@@ -72,10 +72,7 @@ The real power of Acai comes when your production server is configured
 with Guice and you create an alternate test module which configures your server
 with heavyweight dependencies like databases replaced with local in-memory
 implementations. You could then start this server once for all tests in the
-suite (to avoid waiting for it to start between each test) and wipe the
-database between tests (to cheaply isolate test-cases from one-another).
-
-The following example shows how this pattern would be used in tests:
+suite. For example:
 
 ```Java
 @RunWith(JUnit4.class)
@@ -87,8 +84,6 @@ public class ExampleFunctionalTest {
   @Test
   public void checkSomethingWorks() {
     // Call the running server and test some behaviour here.
-    // Any state will be cleared by MyFakeDatabaseWiper after each
-    // test case.
   }
 
   private static class MyTestModule extends AbstractModule {
@@ -96,14 +91,8 @@ public class ExampleFunctionalTest {
       // Normal Guice modules which configure your
       // server with in-memory versions of backends.
       install(MyServerModule());
-      install(MyFakeDatabaseModule());
 
-      install(new TestingServiceModule() {
-        @Override protected void configureTestingServices() {
-          bindTestingService(MyServerRunner.class);
-          bindTestingService(MyFakeDatabaseWiper.class);
-        }
-      });
+      install(TestingServiceModule.forServices(MyServerRunner.class));
     }
   }
 
@@ -112,6 +101,45 @@ public class ExampleFunctionalTest {
 
     @BeforeSuite void startServer() {
       myServer.start().awaitStarted();
+    }
+  }
+}
+```
+
+Note that when a module is passed to Acai in a rule any @BeforeSuite
+methods are only executed once per suite even if the same module is used in
+multiple Acai rules in multiple different test classes within that suite.
+This allows tests of the server to be structured into test classes according to
+the functionality being tested.
+
+## Test isolation
+
+When sharing a locally running backend or fake between multiple test cases as
+above it's often necessary to clear its state between each test in order to
+isolate tests from one another.
+
+This can be achieved using an `@AfterTest` method in a `TestingService`. The
+following example clears all data in a local database between tests:
+
+
+```Java
+@RunWith(JUnit4.class)
+public class ExampleFunctionalTest {
+  @Rule public Acai acai = new Acai(MyTestModule.class);
+
+  @Inject private MyServerClient serverClient;
+
+  @Test
+  public void checkSomethingWorks() {
+    // Perform actions which write to the database here.
+    // Any state will be cleared by MyFakeDatabaseWiper after each
+    // test case.
+  }
+
+  private static class MyTestModule extends AbstractModule {
+    @Override protected void configure() {
+      install(MyFakeDatabaseModule());
+      install(TestingServiceModule.forServices(MyFakeDatabaseWiper.class));
     }
   }
 
@@ -124,12 +152,6 @@ public class ExampleFunctionalTest {
   }
 }
 ```
-
-Note that when a module is passed to Acai in a rule any @BeforeSuite
-methods are only executed once per suite even if the same module is used in
-multiple Acai rules in multiple different test classes within that suite.
-This allows tests of the server to be structured into test classes according to
-the functionality being tested.
 
 ## Test scoped bindings
 Occasionally you may wish to have one instance of a class per test and inject
