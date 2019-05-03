@@ -209,11 +209,11 @@ within those methods as shown in the above example.
 Note that while `@TestScoped` works well for helpers injected only into tests
 (such as the WebDriver instance in the above example) for fakes and other
 objects which are shared with the system under test it is usually simpler to use
-a single instance and reset its state with a `TestingService`. This technique
-avoids some of the limitations of `@TestScoped` such as the fact it can only be
-injected on the test thread or child threads of the test and makes it possible
-to inject the instance into objects whose lifetime is longer than that of an
-individual test.
+a single instance and reset its state with a `TestingService`
+(see [Test isolation](#test-isolation)). This technique avoids some of the limitations
+of `@TestScoped` such as the fact it can only be injected on the test thread or child
+threads of the test and makes it possible to inject the instance into objects whose
+lifetime is longer than that of an individual test.
 
 ## Services which depend upon each other
 If the services you need to start for tests must be started in a specific order
