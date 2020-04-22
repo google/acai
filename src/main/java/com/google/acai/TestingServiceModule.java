@@ -52,11 +52,31 @@ public abstract class TestingServiceModule extends AbstractModule {
       }
     };
   }
+  
+  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  public static TestingServiceModule forServices(
+      Iterable<TestingService> services) {
+    return new TestingServiceModule() {
+      @Override
+      protected void configureTestingServices() {
+        for (TestingService service : services) {
+          bindTestingService(service);
+        }
+      }
+    };
+  }
 
   /** Returns a new module which will configure bindings for all the specified {@code services}. */
   @SafeVarargs
   @CheckReturnValue
   public static TestingServiceModule forServices(Class<? extends TestingService>... services) {
+    return forServices(ImmutableList.copyOf(services));
+  }
+  
+  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  @SafeVarargs
+  @CheckReturnValue
+  public static TestingServiceModule forServices(TestingService... services) {
     return forServices(ImmutableList.copyOf(services));
   }
 
