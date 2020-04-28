@@ -33,14 +33,7 @@ public class TestingServiceModuleTest {
   @Test
   public void servicesAreBound() {
     final ServiceToBindByInstance serviceInstance = new ServiceToBindByInstance();
-    Injector injector =
-        Guice.createInjector(
-            new TestingServiceModule() {
-              @Override
-              protected void configureTestingServices() {
-                bindTestingService(serviceInstance);
-              }
-            });
+    Injector injector = Guice.createInjector(TestingServiceModule.forServices(serviceInstance));
 
     Set<TestingService> boundServices =
         injector.getInstance(new Key<Set<TestingService>>(AcaiInternal.class) {});
