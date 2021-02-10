@@ -2,6 +2,7 @@ language: java
 sudo: false
 jdk:
   - openjdk8
+  - openjdk11
 notifications:
   email: false
 after_success:
