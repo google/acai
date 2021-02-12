@@ -47,7 +47,7 @@ public class AcaiBoundFieldModuleTest {
   @Retention(RetentionPolicy.RUNTIME)
   @interface MyAnnotation {}
 
-  private static class Provided {
+  static class Provided {
     @Bind(lazy = true)
     @MyAnnotation
     String value = DEFAULT;
@@ -59,31 +59,33 @@ public class AcaiBoundFieldModuleTest {
   }
 
   @Test
-  public void bindingsAreTestScoped() {
+  public void bindingsAreTestScoped() throws Throwable {
     // Creating the rule in here since we want to test the scoping.
     Acai acai = new Acai(TestEnv.class);
     Target target = new Target();
 
     acai.apply(
-        new Statement() {
-          @Override
-          public void evaluate() {
-            assertThat(target.valueProvider.get()).isEqualTo(DEFAULT);
-            target.provided.value = SPECIAL;
-            assertThat(target.valueProvider.get()).isEqualTo(SPECIAL);
-          }
-        },
-        null,
-        target);
+            new Statement() {
+              @Override
+              public void evaluate() {
+                assertThat(target.valueProvider.get()).isEqualTo(DEFAULT);
+                target.provided.value = SPECIAL;
+                assertThat(target.valueProvider.get()).isEqualTo(SPECIAL);
+              }
+            },
+            null,
+            target)
+        .evaluate();
 
     acai.apply(
-        new Statement() {
-          @Override
-          public void evaluate() {
-            assertThat(target.valueProvider.get()).isEqualTo(DEFAULT);
-          }
-        },
-        null,
-        target);
+            new Statement() {
+              @Override
+              public void evaluate() {
+                assertThat(target.valueProvider.get()).isEqualTo(DEFAULT);
+              }
+            },
+            null,
+            target)
+        .evaluate();
   }
 }
