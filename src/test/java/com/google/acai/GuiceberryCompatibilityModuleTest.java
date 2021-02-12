@@ -54,7 +54,7 @@ public class GuiceberryCompatibilityModuleTest {
         .evaluate();
 
     assertThat(test.instanceOne).isNotNull();
-    assertThat(test.instanceTwo).isSameAs(test.instanceOne);
+    assertThat(test.instanceTwo).isSameInstanceAs(test.instanceOne);
   }
 
   @Test
@@ -69,7 +69,7 @@ public class GuiceberryCompatibilityModuleTest {
         .apply(statement, frameworkMethod, testTwo)
         .evaluate();
 
-    assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
+    assertThat(testOne.instanceOne).isNotSameInstanceAs(testTwo.instanceOne);
   }
 
   @Test

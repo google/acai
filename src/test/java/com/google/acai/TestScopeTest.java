@@ -46,7 +46,7 @@ public class TestScopeTest {
     new Acai(EmptyTestModule.class).apply(statement, frameworkMethod, test).evaluate();
 
     assertThat(test.instanceOne).isNotNull();
-    assertThat(test.instanceTwo).isSameAs(test.instanceOne);
+    assertThat(test.instanceTwo).isSameInstanceAs(test.instanceOne);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class TestScopeTest {
     new Acai(EmptyTestModule.class).apply(statement, frameworkMethod, testOne).evaluate();
     new Acai(EmptyTestModule.class).apply(statement, frameworkMethod, testTwo).evaluate();
 
-    assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
+    assertThat(testOne.instanceOne).isNotSameInstanceAs(testTwo.instanceOne);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class TestScopeTest {
 
     assertThat(ValidTestingService.valueFromBeforeTest).isNotNull();
     assertThat(ValidTestingService.valueFromAfterTest)
-        .isSameAs(ValidTestingService.valueFromBeforeTest);
+        .isSameInstanceAs(ValidTestingService.valueFromBeforeTest);
   }
 
   @Test
@@ -120,7 +120,7 @@ public class TestScopeTest {
 
     assertThat(testOne.instanceOne).isNotNull();
     assertThat(testOne.instanceOne).isNotNull();
-    assertThat(testOne.instanceOne).isNotSameAs(testTwo.instanceOne);
+    assertThat(testOne.instanceOne).isNotSameInstanceAs(testTwo.instanceOne);
   }
 
   @Test
@@ -147,7 +147,7 @@ public class TestScopeTest {
             test)
         .evaluate();
 
-    assertThat(instanceInMainThread.get()).isSameAs(instanceInChildThread.get());
+    assertThat(instanceInMainThread.get()).isSameInstanceAs(instanceInChildThread.get());
   }
 
   @Test
@@ -174,7 +174,7 @@ public class TestScopeTest {
             test)
         .evaluate();
 
-    assertThat(instanceInMainThread.get()).isSameAs(instanceInChildThread.get());
+    assertThat(instanceInMainThread.get()).isSameInstanceAs(instanceInChildThread.get());
   }
 
   @Test
