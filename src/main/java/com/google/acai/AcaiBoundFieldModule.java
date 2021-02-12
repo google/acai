@@ -35,30 +35,30 @@ import java.util.function.Function;
  *
  * <p>Usage:
  *
- * <pre>{@code
- * @Rule public final Acai acai = new Acai(TestEnv.class);
+ * <pre><code>
+ * &#64;Rule public final Acai acai = new Acai(TestEnv.class);
  *
  * public static class TestEnv extends AbstractModule {
  *   protected void configure() { install(AcaiBoundFieldModule.of(Vars.class); }
  * }
  *
  * public static class Vars {
- *   @Bind(lazy = true) @MyAnnotation String value = "default";
+ *   &#64;Bind(lazy = true) &#64;MyAnnotation String value = "default";
  * }
  *
- * @Inject Vars vars;
- * @Inject Provider<ClassUnderTest> instance; // injects @MyAnnotation String
+ * &#64;Inject Vars vars;
+ * &#64;Inject Provider&lt;ClassUnderTest&rt; instance; // injects &#64;MyAnnotation String
  *
- * @Test public void test1() {
+ * &#64;Test public void test1() {
  *   vars.value = "test";
  *
  *   instance.get().foo(); // uses "test"
  * }
  *
- * @Test public void test2() {
+ * &#64;Test public void test2() {
  *   instance.get().foo(); // uses "default"
  * }
- * }</pre>
+ * </code></pre>
  */
 public final class AcaiBoundFieldModule<T> extends AbstractModule {
   private final Class<T> clazz;
