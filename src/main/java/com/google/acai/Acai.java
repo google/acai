@@ -69,6 +69,12 @@ public class Acai implements MethodRule {
 
   private final Class<? extends Module> module;
 
+  /**
+   * Creates a rule that builds the test injector from {@code module}, which must have a no-arg
+   * constructor.
+   *
+   * @param module the Guice module class used to configure injection for tests using this rule
+   */
   public Acai(Class<? extends Module> module) {
     this.module = checkNotNull(module);
   }
