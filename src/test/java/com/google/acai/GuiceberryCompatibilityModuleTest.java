@@ -18,6 +18,7 @@ package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.guiceberry.GuiceBerryEnvMain;
 import com.google.guiceberry.GuiceBerryModule;
@@ -128,24 +129,23 @@ public class GuiceberryCompatibilityModuleTest {
   }
 
   @Test
-  public void testWrapperExceptionPropagated() throws Throwable {
+  public void testWrapperExceptionPropagated() {
     FakeTestClass test = new FakeTestClass();
 
-    try {
-      new Acai(ThrowingWrapperModule.class)
-          .apply(
-              new Statement() {
-                @Override
-                public void evaluate() {
-                  assertWithMessage("Test should not run when TestWrapper throws").fail();
-                }
-              },
-              frameworkMethod,
-              test)
-          .evaluate();
-      assertWithMessage("Exception from TestWrapper should be propagated").fail();
-    } catch (TestException expected) {
-    }
+    assertThrows(
+        TestException.class,
+        () ->
+            new Acai(ThrowingWrapperModule.class)
+                .apply(
+                    new Statement() {
+                      @Override
+                      public void evaluate() {
+                        assertWithMessage("Test should not run when TestWrapper throws").fail();
+                      }
+                    },
+                    frameworkMethod,
+                    test)
+                .evaluate());
   }
 
   private static class FakeTestClass {
