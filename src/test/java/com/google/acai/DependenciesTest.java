@@ -38,8 +38,7 @@ public class DependenciesTest {
 
   @Test
   public void arbitraryOrdering() {
-    Set<TestingService> testingServices =
-        ImmutableSet.of(new ServiceA(), new ServiceB(), new ServiceA());
+    Set<TestingService> testingServices = ImmutableSet.of(new ServiceA(), new ServiceB());
 
     assertThat(Dependencies.inOrder(testingServices)).containsExactlyElementsIn(testingServices);
   }
