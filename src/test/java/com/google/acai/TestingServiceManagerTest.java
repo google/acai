@@ -150,6 +150,7 @@ public class TestingServiceManagerTest {
     }
 
     @BeforeTest
+    @SuppressWarnings("unused") // Parameter is the whole point: makes the method ineligible.
     private void incrementBeforeTestWithParameterCount(int someParameter) {
       beforeTestWithParameterCount++;
     }

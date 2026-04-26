@@ -253,6 +253,7 @@ public class TestScopeTest {
   private static class MyTestScopedClass {}
 
   private static class InvalidTestingService implements TestingService {
+    @SuppressWarnings("unused") // Fixture: @TestScoped injected into a TestingService is rejected.
     @Inject MyTestScopedClass testScoped;
   }
 
