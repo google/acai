@@ -17,7 +17,6 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
