@@ -131,21 +131,19 @@ public class GuiceberryCompatibilityModuleTest {
   @Test
   public void testWrapperExceptionPropagated() {
     FakeTestClass test = new FakeTestClass();
+    Statement statement =
+        new Acai(ThrowingWrapperModule.class)
+            .apply(
+                new Statement() {
+                  @Override
+                  public void evaluate() {
+                    assertWithMessage("Test should not run when TestWrapper throws").fail();
+                  }
+                },
+                frameworkMethod,
+                test);
 
-    assertThrows(
-        TestException.class,
-        () ->
-            new Acai(ThrowingWrapperModule.class)
-                .apply(
-                    new Statement() {
-                      @Override
-                      public void evaluate() {
-                        assertWithMessage("Test should not run when TestWrapper throws").fail();
-                      }
-                    },
-                    frameworkMethod,
-                    test)
-                .evaluate());
+    assertThrows(TestException.class, statement::evaluate);
   }
 
   private static class FakeTestClass {

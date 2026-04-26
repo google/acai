@@ -313,6 +313,7 @@ public class AcaiTest {
   }
 
   private static class TestWithUnsatisfiedBinding {
+    @SuppressWarnings("unused") // Fixture: injection should fail before this is read.
     @Inject @TestBindingAnnotation ExampleTest unsatisfiedBinding;
   }
 
@@ -342,6 +343,8 @@ public class AcaiTest {
     }
   }
 
+  // Fixture: existence of the non-zero-arg constructor is what the test verifies.
+  @SuppressWarnings("unused")
   private static class ModuleWithoutZeroArgumentConstructor extends AbstractModule {
     ModuleWithoutZeroArgumentConstructor(String argument) {
       // No-op.
@@ -381,6 +384,7 @@ public class AcaiTest {
   }
 
   private static class TearDownAccepterTest {
+    @SuppressWarnings("unused") // Forces @Provides to fire so the teardown is registered.
     @Inject @TestBindingAnnotation String injected;
   }
 

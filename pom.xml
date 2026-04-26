@@ -59,10 +59,11 @@
         <version>3.14.0</version>
         <configuration>
           <release>26</release>
+          <failOnWarning>true</failOnWarning>
           <compilerArgs>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
-            <arg>-Xplugin:ErrorProne</arg>
+            <arg>-Xplugin:ErrorProne -XepExcludedPaths:.*/target/generated-(test-)?sources/.*</arg>
           </compilerArgs>
           <annotationProcessorPaths>
             <path>
@@ -95,6 +96,9 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.12.0</version>
+        <configuration>
+          <failOnWarnings>true</failOnWarnings>
+        </configuration>
         <executions>
           <execution>
             <id>attach-javadocs</id>
