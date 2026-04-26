@@ -40,7 +40,15 @@ import javax.inject.Singleton;
  */
 public abstract class TestingServiceModule extends AbstractModule {
 
-  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  /** Constructor for use by subclasses. */
+  protected TestingServiceModule() {}
+
+  /**
+   * Returns a new module which will configure bindings for all the specified {@code services}.
+   *
+   * @param services the testing service classes to bind
+   * @return a module installing those bindings
+   */
   public static TestingServiceModule forServices(
       Iterable<Class<? extends TestingService>> services) {
     return new TestingServiceModule() {
@@ -53,14 +61,24 @@ public abstract class TestingServiceModule extends AbstractModule {
     };
   }
 
-  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+  /**
+   * Returns a new module which will configure bindings for all the specified {@code services}.
+   *
+   * @param services the testing service classes to bind
+   * @return a module installing those bindings
+   */
   @SafeVarargs
   @CheckReturnValue
   public static TestingServiceModule forServices(Class<? extends TestingService>... services) {
     return forServices(ImmutableList.copyOf(services));
   }
-  
-  /** Returns a new module which will configure bindings for all the specified {@code services}. */
+
+  /**
+   * Returns a new module which will bind the supplied {@code services} as instances.
+   *
+   * @param services the testing service instances to bind
+   * @return a module installing those bindings
+   */
   @CheckReturnValue
   public static TestingServiceModule forServices(TestingService... services) {
     return new TestingServiceModule() {
@@ -78,12 +96,22 @@ public abstract class TestingServiceModule extends AbstractModule {
     configureTestingServices();
   }
 
+  /**
+   * Binds {@code testingService} as a {@link TestingService} instance.
+   *
+   * @param testingService the instance to bind
+   */
   protected final void bindTestingService(TestingService testingService) {
     Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class)
         .addBinding()
         .toInstance(testingService);
   }
 
+  /**
+   * Binds {@code testingService} as a {@link TestingService} class.
+   *
+   * @param testingService the class to bind, instantiated by Guice on first use
+   */
   protected final void bindTestingService(Class<? extends TestingService> testingService) {
     Multibinder.newSetBinder(this.binder(), TestingService.class, AcaiInternal.class)
         .addBinding()

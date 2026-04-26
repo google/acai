@@ -59,6 +59,8 @@ import java.util.function.Function;
  *   instance.get().foo(); // uses "default"
  * }
  * </code></pre>
+ *
+ * @param <T> the class whose {@code @Bind(lazy = true)} fields define the bindings
  */
 public final class AcaiBoundFieldModule<T> extends AbstractModule {
   private final Class<T> clazz;
@@ -75,9 +77,14 @@ public final class AcaiBoundFieldModule<T> extends AbstractModule {
   }
 
   /**
-   * Use like: {@code install(AcaiBoundFieldModule.of(Vars.class));} in your TestEnv.
+   * Returns a module that binds the {@code @Bind(lazy = true)} fields of {@code clazz} for use in a
+   * test. Use like: {@code install(AcaiBoundFieldModule.of(Vars.class));} in your TestEnv.
    *
    * <p>NOTE: The class passed must be {@code public static}.
+   *
+   * @param <T> the class whose annotated fields define the bindings
+   * @param clazz the class to instantiate via its no-arg constructor and inspect for bindings
+   * @return a module installing the discovered bindings
    */
   public static <T> AcaiBoundFieldModule<T> of(Class<T> clazz) {
     return new AcaiBoundFieldModule<>(clazz);

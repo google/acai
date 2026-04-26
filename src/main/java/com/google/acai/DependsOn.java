@@ -37,5 +37,10 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(TYPE)
 public @interface DependsOn {
+  /**
+   * The testing services this service depends upon.
+   *
+   * @return the dependency classes
+   */
   Class<? extends TestingService>[] value();
 }
