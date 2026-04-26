@@ -47,7 +47,7 @@ import java.util.function.Function;
  * }
  *
  * &#64;Inject Vars vars;
- * &#64;Inject Provider&lt;ClassUnderTest&rt; instance; // injects &#64;MyAnnotation String
+ * &#64;Inject Provider&lt;ClassUnderTest&gt; instance; // injects &#64;MyAnnotation String
  *
  * &#64;Test public void test1() {
  *   vars.value = "test";
