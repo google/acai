@@ -38,8 +38,8 @@
   <packaging>jar</packaging>
 
   <scm>
-    <connection>scm:git:git@github.com:google/acai.git</connection>
-    <developerConnection>scm:git:git@github.com:google/acai.git</developerConnection>
+    <connection>scm:git:https://github.com/google/acai.git</connection>
+    <developerConnection>scm:git:https://github.com/google/acai.git</developerConnection>
     <url>https://github.com/google/acai</url>
   </scm>
 
