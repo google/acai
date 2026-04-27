@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -124,7 +123,7 @@ public class Acai implements MethodRule {
             Dependencies.inOrder(injector.getInstance(TESTING_SERVICES_KEY))
                 .stream()
                 .map(TestingServiceManager::new)
-                .collect(Collectors.toList()));
+                .toList());
     environments.put(module, testEnvironment);
     return testEnvironment;
   }
