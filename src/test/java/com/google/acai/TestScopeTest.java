@@ -17,6 +17,7 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
@@ -24,9 +25,7 @@ import com.google.inject.ProvisionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.inject.Inject;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -35,7 +34,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestScopeTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private Statement statement;
   @Mock private FrameworkMethod frameworkMethod;
 
@@ -61,12 +59,12 @@ public class TestScopeTest {
   }
 
   @Test
-  public void servicesInstantiatedOutsideTestScope() throws Throwable {
+  public void servicesInstantiatedOutsideTestScope() {
     FakeTestClass test = new FakeTestClass();
+    Statement runner = new Acai(InvalidTestModule.class).apply(statement, frameworkMethod, test);
 
-    thrown.expect(ProvisionException.class);
-    thrown.expectMessage("@TestScoped binding outside test");
-    new Acai(InvalidTestModule.class).apply(statement, frameworkMethod, test).evaluate();
+    ProvisionException e = assertThrows(ProvisionException.class, runner::evaluate);
+    assertThat(e).hasMessageThat().contains("@TestScoped binding outside test");
   }
 
   @Test
