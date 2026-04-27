@@ -17,17 +17,14 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class TestingServiceManagerTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void callBeforeSuiteMethod() {
@@ -93,28 +90,29 @@ public class TestingServiceManagerTest {
 
   @Test
   public void runtimeExceptionsPropagated() {
-    thrown.expect(TestRuntimeException.class);
-    new TestingServiceManager(
+    TestingServiceManager manager =
+        new TestingServiceManager(
             new TestingService() {
               @BeforeTest
               void beforeTest() {
                 throw new TestRuntimeException();
               }
-            })
-        .beforeTest();
+            });
+    assertThrows(TestRuntimeException.class, manager::beforeTest);
   }
 
   @Test
   public void checkedExceptionsPropagatedInsideRuntimeException() {
-    thrown.expectCause(isA(TestException.class));
-    new TestingServiceManager(
+    TestingServiceManager manager =
+        new TestingServiceManager(
             new TestingService() {
               @BeforeTest
               void beforeTest() throws TestException {
                 throw new TestException();
               }
-            })
-        .beforeTest();
+            });
+    RuntimeException e = assertThrows(RuntimeException.class, manager::beforeTest);
+    assertThat(e).hasCauseThat().isInstanceOf(TestException.class);
   }
 
   @Test

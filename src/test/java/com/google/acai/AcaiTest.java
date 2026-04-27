@@ -19,6 +19,7 @@ package com.google.acai;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -31,9 +32,7 @@ import java.lang.annotation.Retention;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -42,7 +41,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AcaiTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
   @Mock private Statement statement;
   @Mock private FrameworkMethod frameworkMethod;
 
@@ -95,12 +93,8 @@ public class AcaiTest {
   @Test
   public void failingTestInjectionDoesNotAffectSubsequentTests() throws Throwable {
     Acai acai = new Acai(TestModule.class);
-    try {
-      acai.apply(statement, frameworkMethod, new TestWithUnsatisfiedBinding()).evaluate();
-      assertWithMessage("Expected ConfigurationException to be thrown.").fail();
-    } catch (ConfigurationException e) {
-      // Expected: TestWithUnsatisfiedBinding requires binding not satisfied by TestModule.
-    }
+    Statement failing = acai.apply(statement, frameworkMethod, new TestWithUnsatisfiedBinding());
+    assertThrows(ConfigurationException.class, failing::evaluate);
 
     acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
 
@@ -110,12 +104,8 @@ public class AcaiTest {
   @Test
   public void failingBeforeTestMethodDoesNotAffectSubsequentTests() throws Throwable {
     Acai acai = new Acai(FailingBeforeTestModule.class);
-    try {
-      acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
-      assertWithMessage("Expected TestException to be thrown.").fail();
-    } catch (TestException e) {
-      // Expected: ServiceWithFailingBeforeTest throws TestException in @BeforeTest.
-    }
+    Statement failing = acai.apply(statement, frameworkMethod, new ExampleTest());
+    assertThrows(TestException.class, failing::evaluate);
 
     ServiceWithFailingBeforeTest.shouldFail = false;
     acai.apply(statement, frameworkMethod, new ExampleTest()).evaluate();
@@ -146,19 +136,20 @@ public class AcaiTest {
   }
 
   @Test
-  public void usefulErrorMessageWhenModuleMissingZeroArgConstructor() throws Throwable {
-    thrown.expectMessage("does not have zero argument constructor");
-    new Acai(ModuleWithoutZeroArgumentConstructor.class)
-        .apply(statement, frameworkMethod, new Object())
-        .evaluate();
+  public void usefulErrorMessageWhenModuleMissingZeroArgConstructor() {
+    Statement runner =
+        new Acai(ModuleWithoutZeroArgumentConstructor.class)
+            .apply(statement, frameworkMethod, new Object());
+    RuntimeException e = assertThrows(RuntimeException.class, runner::evaluate);
+    assertThat(e).hasMessageThat().contains("does not have zero argument constructor");
   }
 
   @Test
-  public void rethrowsExceptionThrownByModuleConstructor() throws Throwable {
-    thrown.expect(TestException.class);
-    new Acai(ModuleWithThrowingConstructor.class)
-        .apply(statement, frameworkMethod, new Object())
-        .evaluate();
+  public void rethrowsExceptionThrownByModuleConstructor() {
+    Statement runner =
+        new Acai(ModuleWithThrowingConstructor.class)
+            .apply(statement, frameworkMethod, new Object());
+    assertThrows(TestException.class, runner::evaluate);
   }
 
   @Test

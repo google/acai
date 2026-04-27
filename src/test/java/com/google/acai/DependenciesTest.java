@@ -17,21 +17,18 @@
 package com.google.acai;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Set;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class DependenciesTest {
-  @Rule public ExpectedException thrown = ExpectedException.none();
-
   private static class ServiceA implements TestingService {}
 
   private static class ServiceB implements TestingService {}
@@ -98,8 +95,9 @@ public class DependenciesTest {
 
   @Test
   public void throwsExceptionIfCyclePresent() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Cycle");
-    Dependencies.inOrder(ImmutableSet.of(new A(), new B(), new C()));
+    ImmutableSet<TestingService> services = ImmutableSet.of(new A(), new B(), new C());
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> Dependencies.inOrder(services));
+    assertThat(e).hasMessageThat().contains("Cycle");
   }
 }
