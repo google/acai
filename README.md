@@ -4,7 +4,7 @@
 [![CI](https://github.com/google/acai/actions/workflows/ci.yml/badge.svg)](https://github.com/google/acai/actions/workflows/ci.yml)
 
 Acai makes it easy to write functional tests of your application
-with JUnit4 and Guice.
+with JUnit 4 and Guice.
 
 Acai makes it simple to:
  - Inject the helper classes you need into tests
@@ -27,7 +27,7 @@ Add a dependency on `com.google.acai:acai` in your build system to fetch Acai
 automatically from Maven Central. For example, with Maven add the following to
 your dependencies in `pom.xml`:
 
-```XML
+```xml
 <dependency>
   <groupId>com.google.acai</groupId>
   <artifactId>acai</artifactId>
@@ -45,7 +45,7 @@ jars.
 The simplest test using Acai doesn't register any TestingService bindings
 at all, it just uses Acai to inject a test with a module:
 
-```Java
+```java
 @RunWith(JUnit4.class)
 public class SimpleTest {
   @Rule public Acai acai = new Acai(MyTestModule.class);
@@ -72,7 +72,7 @@ with heavyweight dependencies like databases replaced with local in-memory
 implementations. You could then start this server once for all tests in the
 suite. For example:
 
-```Java
+```java
 @RunWith(JUnit4.class)
 public class ExampleFunctionalTest {
   @Rule public Acai acai = new Acai(MyTestModule.class);
@@ -88,7 +88,7 @@ public class ExampleFunctionalTest {
     @Override protected void configure() {
       // Normal Guice modules which configure your
       // server with in-memory versions of backends.
-      install(MyServerModule());
+      install(new MyServerModule());
 
       install(TestingServiceModule.forServices(MyServerRunner.class));
     }
@@ -120,7 +120,7 @@ This can be achieved using an `@AfterTest` method in a `TestingService`. The
 following example clears all data in a local database between tests:
 
 
-```Java
+```java
 @RunWith(JUnit4.class)
 public class ExampleFunctionalTest {
   @Rule public Acai acai = new Acai(MyTestModule.class);
@@ -136,13 +136,13 @@ public class ExampleFunctionalTest {
 
   private static class MyTestModule extends AbstractModule {
     @Override protected void configure() {
-      install(MyFakeDatabaseModule());
+      install(new MyFakeDatabaseModule());
       install(TestingServiceModule.forServices(MyFakeDatabaseWiper.class));
     }
   }
 
   private static class MyFakeDatabaseWiper implements TestingService {
-    @Inject private MyFakeDatabse myFakeDatabase;
+    @Inject private MyFakeDatabase myFakeDatabase;
 
     @AfterTest void wipeDatabase() {
       myFakeDatabase.wipe();
@@ -162,7 +162,7 @@ automation tool) in our tests like so:
 
 ```java
 class WebdriverModule extends AbstractModule {
-  private static final Duration MAX_WAIT = Duration.standardSeconds(5);
+  private static final Duration MAX_WAIT = Duration.ofSeconds(5);
 
   @Override
   protected void configure() {
@@ -182,7 +182,7 @@ class WebdriverModule extends AbstractModule {
 
   @Provides
   WebDriverWait provideWait(WebDriver webDriver) {
-    return new WebDriverWait(webDriver, MAX_WAIT.getStandardSeconds());
+    return new WebDriverWait(webDriver, MAX_WAIT);
   }
 
   static class WebDriverQuitter implements TestingService {
@@ -219,7 +219,7 @@ you can express this using the `@DependsOn` annotation.
 
 For example:
 
-```Java
+```java
 @RunWith(JUnit4.class)
 public class ExampleFrontendWebdriverTest {
   @Rule public Acai acai = new Acai(MyTestModule.class);
@@ -237,9 +237,9 @@ public class ExampleFrontendWebdriverTest {
       // Normal Guice modules which configure your
       // server with in-memory versions of servers and
       // a test module configuring a webdriver client.
-      install(MyServerModule());
-      install(MyFakeDatabaseModule());
-      install(WebDriverModule());
+      install(new MyServerModule());
+      install(new MyFakeDatabaseModule());
+      install(new WebDriverModule());
 
       install(new TestingServiceModule() {
         @Override protected void configureTestingServices() {
@@ -276,7 +276,7 @@ backend server before starting the frontend.
 ## API
 As shown in the above examples Acai has a relatively small API surface.
 Firstly, and most importantly, there is the `Acai` rule class itself
-which is used as a JUnit4 `@Rule` and is passed a module class to be used to
+which is used as a JUnit 4 `@Rule` and is passed a module class to be used to
 configure the test.
 
 The module class passed to the `Acai` constructor may optionally use
