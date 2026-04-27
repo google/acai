@@ -100,7 +100,8 @@ class GuiceberryCompatibilityModule extends AbstractModule {
     } catch (InvocationTargetException e) {
       throw e.getCause();
     } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to invoke run on GuiceBerryEnvMain", e);
+      throw new RuntimeException(
+          "Failed to invoke " + method.methodName() + " on " + method.className(), e);
     }
   }
 
