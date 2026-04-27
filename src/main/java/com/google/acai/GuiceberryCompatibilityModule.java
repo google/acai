@@ -16,7 +16,6 @@
 
 package com.google.acai;
 
-import com.google.auto.value.AutoValue;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -39,14 +38,14 @@ import java.util.Optional;
 class GuiceberryCompatibilityModule extends AbstractModule {
   private static final String GUICEBRRY_TEST_SCOPED_ANNOTATION = "com.google.guiceberry.TestScoped";
   private static final MethodReference GUICEBERRY_ENV_MAIN_RUN =
-      MethodReference.create("com.google.guiceberry.GuiceBerryEnvMain", "run");
+      new MethodReference("com.google.guiceberry.GuiceBerryEnvMain", "run");
   private static final MethodReference TEST_WRAPPER_RUN_BEFORE_TEST =
-      MethodReference.create("com.google.guiceberry.TestWrapper", "toRunBeforeTest");
+      new MethodReference("com.google.guiceberry.TestWrapper", "toRunBeforeTest");
   private static final MethodReference TEST_SCOPE_LISTENER_ENTERING_SCOPE =
-      MethodReference.create(
+      new MethodReference(
           "com.google.inject.testing.guiceberry.TestScopeListener", "enteringScope");
   private static final MethodReference TEST_SCOPE_LISTENER_EXITING_SCOPE =
-      MethodReference.create(
+      new MethodReference(
           "com.google.inject.testing.guiceberry.TestScopeListener", "exitingScope");
 
   @Override
@@ -113,14 +112,5 @@ class GuiceberryCompatibilityModule extends AbstractModule {
     }
   }
 
-  @AutoValue
-  abstract static class MethodReference {
-    static MethodReference create(String className, String methodName) {
-      return new AutoValue_GuiceberryCompatibilityModule_MethodReference(className, methodName);
-    }
-
-    abstract String className();
-
-    abstract String methodName();
-  }
+  record MethodReference(String className, String methodName) {}
 }

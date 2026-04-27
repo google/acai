@@ -22,7 +22,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.google.auto.value.AutoValue;
 import com.google.common.testing.TearDownAccepter;
 import com.google.inject.AbstractModule;
 import com.google.inject.BindingAnnotation;
@@ -283,20 +282,13 @@ public class AcaiTest {
     }
   }
 
-  @AutoValue
-  abstract static class MethodCalls {
-    abstract int beforeSuite();
-
-    abstract int beforeTest();
-
-    abstract int afterTest();
-
+  record MethodCalls(int beforeSuite, int beforeTest, int afterTest) {
     static MethodCalls create() {
-      return new AutoValue_AcaiTest_MethodCalls(0, 0, 0);
+      return new MethodCalls(0, 0, 0);
     }
 
     static MethodCalls create(int beforeSuite, int beforeTest, int afterTest) {
-      return new AutoValue_AcaiTest_MethodCalls(beforeSuite, beforeTest, afterTest);
+      return new MethodCalls(beforeSuite, beforeTest, afterTest);
     }
 
     MethodCalls incrementBeforeSuite() {
