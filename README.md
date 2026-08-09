@@ -205,7 +205,7 @@ within those methods as shown in the above example.
 
 ### When not to use TestScoped
 Note that while `@TestScoped` works well for helpers injected only into tests
-(such as the WebDriver instance in the above example) for fakes and other
+(such as the WebDriver instance in the above example). For fakes and other
 objects which are shared with the system under test it is usually simpler to use
 a single instance and reset its state with a `TestingService`
 (see [Test isolation](#test-isolation)). This technique avoids some of the limitations
